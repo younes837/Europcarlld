@@ -45,7 +45,6 @@ const data = {
       url: "/",
       icon: Car,
 
-      isActive: true,
       items: [
         {
           title: "Contrat actuel",
