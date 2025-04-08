@@ -46,7 +46,6 @@ const data = {
       url: "/",
       icon: Car,
 
-      isActive: true,
       items: [
         {
           title: "Contrat actuel",
@@ -70,7 +69,7 @@ const data = {
         },
         {
           title: "Suivi des marchés",
-          url: "/suivi-des-marches",
+          url: "/suivi-marches",
         },
       ],
     },
@@ -82,11 +81,11 @@ const data = {
       items: [
         {
           title: "Commandes en cours",
-          url: "/commandes-encours",
+          url: "/commandes-en-cours",
         },
         {
-          title: "Entretiens",
-          url: "/entretiens",
+          title: "Liste des entretiens",
+          url: "/liste-entretiens",
         },
         {
           title: "Pneumatiques",
