@@ -80,11 +80,11 @@ const data = {
       items: [
         {
           title: "Commandes en cours",
-          url: "/commandes-encours",
+          url: "/commandes-en-cours",
         },
         {
-          title: "Entretiens",
-          url: "/entretiens",
+          title: "Liste des entretiens",
+          url: "/liste-entretiens",
         },
         {
           title: "Pneumatiques",
