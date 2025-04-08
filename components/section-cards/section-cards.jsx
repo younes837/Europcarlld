@@ -26,7 +26,7 @@ export function SectionCards() {
         // Using Promise.all to fetch all data simultaneously
         const [res1, res2, res3, res4, res5, res6] = await Promise.all([
           fetch("http://localhost:3001/api/contrat-daba"),
-          fetch("http://localhost:3001/api/cal_grille_offre"),
+          fetch("http://localhost:3001/api/cal_grille_offre_original"),
           fetch("http://localhost:3001/api/parc-global"),
           fetch("http://localhost:3001/api/total_vo"),
           fetch("http://localhost:3001/api/TOTAL_SINISTRE"),
