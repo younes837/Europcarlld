@@ -68,7 +68,7 @@ const data = {
         },
         {
           title: "Suivi des marchés",
-          url: "/suivi-des-marches",
+          url: "/suivi-marches",
         },
       ],
     },

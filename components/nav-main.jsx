@@ -21,8 +21,8 @@ export function NavMain({ items }) {
   return (
     <SidebarGroup>
       <SidebarMenu>
-        {items.map((item) => (
-          <>
+        {items.map((item, index) => (
+          <div key={index}>
             <SidebarGroupLabel
               key={item.url}
               className={"text-muted-foreground uppercase"}
@@ -58,7 +58,7 @@ export function NavMain({ items }) {
                 </CollapsibleContent>
               </SidebarMenuItem>
             </Collapsible>
-          </>
+          </div>
         ))}
       </SidebarMenu>
     </SidebarGroup>

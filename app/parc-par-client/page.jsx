@@ -9,33 +9,22 @@ import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
 
 const columns = [
-  { field: "client", headerName: "Client", width: 200 },
-  { field: "CONTRAT", headerName: "Contrat", width: 130 },
-  { field: "ETAT", headerName: "État", width: 130 },
-  { field: "DUREE", headerName: "Durée", width: 130 },
-  { field: "KM", headerName: "Kilométrage", width: 130 },
-  { field: "loyer ht", headerName: "Loyer HT", width: 130 },
-  { field: "loyer ttc", headerName: "Loyer TTC", width: 130 },
-  { field: "loyer_global", headerName: "Loyer Global", width: 130 },
-  { field: "marque modele", headerName: "Marque Modèle", width: 200 },
-  { field: "IMMA", headerName: "Immatriculation", width: 130 },
-  { field: "VR HT", headerName: "VR HT", width: 130 },
-  { field: "ACH_PX_HT", headerName: "Prix Achat HT", width: 130 },
-  { field: "ACH_PX_TTC", headerName: "Prix Achat TTC", width: 130 },
-  { field: "Date_Debut", headerName: "Date de début", width: 130 },
-  { field: "DT ARR Prevue", headerName: "Date Arrivée Prévue", width: 160 },
-  { field: "F470DTFINPROL", headerName: "Date Fin Prolongation", width: 160 },
+  { field: "Nom client", headerName: "Nom Client", flex: 1 },
+  { field: "LOYER", headerName: "LOYER", flex: 1 },
+  { field: "MARGE", headerName: "MARGE", flex: 1 },
+  { field: "RNL", headerName: "RNL", flex: 1 },
+  { field: "Parc", headerName: "Parc", width: 150 },
 ];
 
-export default function PageActuel() {
+export default function Page() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
+  const [rowCount, setRowCount] = useState(0);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 50,
   });
-  const [rowCount, setRowCount] = useState(0);
   const [sortModel, setSortModel] = useState([]);
   const [filterModel, setFilterModel] = useState({
     items: [],
@@ -79,7 +68,7 @@ export default function PageActuel() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL
-        }/contrat_longue_duree?${params.toString()}`
+        }/cal_grille_offre?${params.toString()}`
       );
       const data = await response.json();
       setRows(data.items || []);
@@ -98,7 +87,7 @@ export default function PageActuel() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL
-        }/contrat_longue_duree?page=1&pageSize=10000${
+        }/cal_grille_offre?page=1&pageSize=10000${
           clientSearch ? `&clientSearch=${clientSearch}` : ""
         }`
       );
@@ -172,22 +161,11 @@ export default function PageActuel() {
 
       // Prepare data for export
       const formattedData = exportData.map((row) => ({
-        Client: row.client,
-        Contrat: row.CONTRAT,
-        État: row.ETAT,
-        Durée: row.DUREE,
-        Kilométrage: row.KM,
-        "Loyer HT": row["loyer ht"],
-        "Loyer TTC": row["loyer ttc"],
-        "Loyer Global": row.loyer_global,
-        "Marque Modèle": row["marque modele"],
-        Immatriculation: row.IMMA,
-        "VR HT": row["VR HT"],
-        "Prix Achat HT": row.ACH_PX_HT,
-        "Prix Achat TTC": row.ACH_PX_TTC,
-        "Date de début": row.Date_Debut,
-        "Date Arrivée Prévue": row["DT ARR Prevue"],
-        "Date Fin Prolongation": row.F470DTFINPROL,
+        "Nom Client": row["Nom client"],
+        LOYER: row.LOYER,
+        MARGE: row.MARGE,
+        RNL: row.RNL,
+        Parc: row.Parc,
       }));
 
       // Create worksheet
@@ -195,12 +173,12 @@ export default function PageActuel() {
 
       // Create workbook
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Contrats");
+      XLSX.utils.book_append_sheet(wb, ws, "Parc par Client");
 
       // Save file
       XLSX.writeFile(
         wb,
-        `contrats_longue_duree_${new Date().toISOString().split("T")[0]}.xlsx`
+        `parc_par_client_${new Date().toISOString().split("T")[0]}.xlsx`
       );
     } catch (error) {
       console.error("Error exporting to Excel:", error);
@@ -212,7 +190,7 @@ export default function PageActuel() {
   return (
     <div className="px-4">
       <h2 className="mt-10 scroll-m-20 pb-2 text-3xl text-muted-foreground mb-4 font-semibold tracking-tight transition-colors first:mt-0">
-        Les Contrats de Longue Durée
+        Parc par Client
       </h2>
       <div className="flex justify-between items-center mb-4">
         <div className="w-full sm:w-64">
