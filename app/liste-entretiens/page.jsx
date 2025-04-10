@@ -221,41 +221,41 @@ export default function ListeEntretiens() {
       </h2>
 
       <div className="grid grid-cols-4 gap-6 mb-8">
-        <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-blue-600 mb-2">Montant Total HT</p>
-              <div title={summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-blue-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Montant Total HT</p>
+              <div title={summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-50 to-white border-green-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-green-600 mb-2">Nombre D'entretiens</p>
-              <div title={summary.totalEntretiens.toLocaleString('fr-FR')} className="text-2xl font-bold text-green-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Nombre D'entretiens</p>
+              <div title={summary.totalEntretiens.toLocaleString('fr-FR')} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.totalEntretiens.toLocaleString('fr-FR')}
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-50 to-white border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-purple-600 mb-2">Montant Moyen</p>
-              <div title={summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-purple-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Montant Moyen</p>
+              <div title={summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-orange-50 to-white border-orange-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-orange-600 mb-2">Marques Uniques</p>
-              <div title={summary.uniqueMarques.toLocaleString('fr-FR')} className="text-2xl font-bold text-orange-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Marques Uniques</p>
+              <div title={summary.uniqueMarques.toLocaleString('fr-FR')} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.uniqueMarques.toLocaleString('fr-FR')}
               </div>
             </div>
