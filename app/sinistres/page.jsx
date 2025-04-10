@@ -17,6 +17,7 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
+import frFR from "../frFR";
 
 // Register ChartJS components
 ChartJS.register(
@@ -555,6 +556,7 @@ export default function SinistresPage() {
               },
             },
           }}
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
         />
       </div>
 

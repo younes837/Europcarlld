@@ -7,6 +7,7 @@ import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import * as XLSX from "xlsx";
+import frFR from "../frFR";
 
 const columns = [
   { field: "Contrat", headerName: "Contrat", width: 150 },
@@ -347,6 +348,7 @@ export default function ListeEntretiens() {
           getRowId={(row) => row.id}
           disableRowSelectionOnClick
           className="bg-white"
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
         />
       </div>
     </div>
