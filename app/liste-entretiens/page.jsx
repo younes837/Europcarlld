@@ -37,6 +37,7 @@ export default function ListeEntretiens() {
   const [clientSearchInput, setClientSearchInput] = useState("");
   const [immatriculationSearchInput, setImmatriculationSearchInput] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState({
     totalMontantHT: 0,
@@ -143,10 +144,20 @@ export default function ListeEntretiens() {
   // Handle search with debounce
   const handleSearch = useCallback(
     (value, type) => {
+      // Update the input value immediately for responsiveness
+      if (type === 'client') {
+        setClientSearchInput(value);
+      } else {
+        setImmatriculationSearchInput(value);
+      }
+
       // Clear previous timeout
       if (searchTimeout) {
         clearTimeout(searchTimeout);
       }
+
+      // Set searching state to true
+      setIsSearching(true);
 
       // Set new timeout for debounce
       const timeout = setTimeout(() => {
@@ -156,7 +167,8 @@ export default function ListeEntretiens() {
           setImmatriculationSearch(value);
         }
         setPaginationModel((prev) => ({ ...prev, page: 0 })); // Reset to first page
-      }, 300);
+        setIsSearching(false);
+      }, 1000); // Increased debounce time to 500ms for better performance
 
       setSearchTimeout(timeout);
     },
@@ -281,12 +293,12 @@ export default function ListeEntretiens() {
                 id="client-search"
                 placeholder="Nom du client..."
                 value={clientSearchInput}
-                onChange={(e) => {
-                  setClientSearchInput(e.target.value);
-                  handleSearch(e.target.value, 'client');
-                }}
+                onChange={(e) => handleSearch(e.target.value, 'client')}
                 className="pl-8"
               />
+              {isSearching && clientSearchInput && (
+                <div className="absolute right-2 top-2.5 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+              )}
             </div>
           </div>
           <div className="w-64">
@@ -299,10 +311,7 @@ export default function ListeEntretiens() {
                 id="immatriculation-search"
                 placeholder="Immatriculation..."
                 value={immatriculationSearchInput}
-                onChange={(e) => {
-                  setImmatriculationSearchInput(e.target.value);
-                  handleSearch(e.target.value, 'immatriculation');
-                }}
+                onChange={(e) => handleSearch(e.target.value, 'immatriculation')}
                 className="pl-8"
               />
             </div>

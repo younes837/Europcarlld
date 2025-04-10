@@ -33,6 +33,7 @@ export default function PageActuel() {
   const [fournisseurSearch, setFournisseurSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const fetchData = async (
     page,
@@ -126,11 +127,15 @@ export default function PageActuel() {
         clearTimeout(searchTimeout);
       }
 
+      // Set searching state to true
+      setIsSearching(true);
+
       // Set new timeout for debounce
       const timeout = setTimeout(() => {
         setFournisseurSearch(value); // Update the actual search value after delay
         setPaginationModel((prev) => ({ ...prev, page: 0 })); // Reset to first page
-      }, 300); // Reduced debounce time to 300ms for better responsiveness
+        setIsSearching(false);
+      }, 1000); // Increased debounce time to 500ms for better performance
 
       setSearchTimeout(timeout);
     },
