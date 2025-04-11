@@ -3,7 +3,7 @@
 
 import Chart from "./Chart";
 import { useEffect, useState } from "react";
-import SkeletonCard from './SkeletonCard'
+import Loader from "./Loader";
 
 
 function TopClient() {
@@ -29,7 +29,7 @@ function TopClient() {
   },[])
 
   if (isLoading) {
-    return <SkeletonCard/>
+    return <Loader/>
   }
 
   

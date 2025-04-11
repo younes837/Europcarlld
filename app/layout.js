@@ -3,6 +3,8 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import RemoveShortcutListener from "./components/RemoveShortcutListener";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -24,6 +26,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased  theme-blue-scaled theme-scaled`}
       >
+        <RemoveShortcutListener />
         <SidebarProvider
           style={{
             "--sidebar-width": "calc(var(--spacing) * 72)",

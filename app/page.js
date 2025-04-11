@@ -7,6 +7,7 @@ import { ChartAreaInteractive } from "@/components/chart-area-interactive";
 import PieChart from "@/components/top-marque/PieChart";
 import TopClient, { Barchart } from "@/components/top-client/TopClient";
 import  Lld  from "@/components/lld/Lld";
+// import  Chart  from "@/components/chart/Chart";
 
 export default function Page() {
     
@@ -24,6 +25,7 @@ export default function Page() {
       </div>
       <div className="px-4 lg:px-6"><ChartAreaInteractive /></div>
       <div className="px-4 lg:px-6"><Lld/></div>
+      {/* <div className="px-4 lg:px-6"><Chart/></div> */}
     </>
   );
 }

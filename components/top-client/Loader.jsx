@@ -1,6 +1,6 @@
 import { Skeleton } from "../ui/skeleton"
 
-function SkeletonCard() {
+function Loader() {
   return (
     <div className="flex flex-col space-y-3 justify-center">
       <Skeleton className="h-[350px] w-[700px] rounded-xl" />
@@ -12,4 +12,4 @@ function SkeletonCard() {
   )
 }
 
-export default SkeletonCard
+export default Loader
