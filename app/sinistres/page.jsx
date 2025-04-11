@@ -83,7 +83,7 @@ export default function SinistresPage() {
     labels: [],
     datasets: [
       {
-        label: "Nombre de Sinistres",
+        label: "Nombre de Sinistres par Type",
         data: [],
         backgroundColor: [
           'rgba(52, 211, 153, 0.7)',  // green for Non Responsable
@@ -104,7 +104,7 @@ export default function SinistresPage() {
     labels: [],
     datasets: [
       {
-        label: "Nombre de Sinistres",
+        label: "Nombre de Sinistres par Nature",
         data: [],
         backgroundColor: [
           'rgba(99, 102, 241, 0.7)',   // indigo
@@ -112,6 +112,9 @@ export default function SinistresPage() {
           'rgba(139, 92, 246, 0.7)',   // purple
           'rgba(14, 165, 233, 0.7)',   // sky
           'rgba(168, 85, 247, 0.7)',   // violet
+          'rgba(251, 146, 60, 0.7)',   // orange
+          'rgba(34, 197, 94, 0.7)',    // green
+          'rgba(59, 130, 246, 0.7)',   // blue
         ],
         borderColor: [
           'rgb(99, 102, 241)',
@@ -119,6 +122,9 @@ export default function SinistresPage() {
           'rgb(139, 92, 246)',
           'rgb(14, 165, 233)',
           'rgb(168, 85, 247)',
+          'rgb(251, 146, 60)',
+          'rgb(34, 197, 94)',
+          'rgb(59, 130, 246)',
         ],
         borderWidth: 1,
       },
@@ -133,6 +139,7 @@ export default function SinistresPage() {
       const params = new URLSearchParams({
         page: paginationModel.page + 1,
         pageSize: paginationModel.pageSize,
+        includeStats: true, // New parameter to request stats with the main data
       });
 
       // Add sorting parameters if available
@@ -170,8 +177,37 @@ export default function SinistresPage() {
       }
 
       const data = await response.json();
+      
+      // Update table data
       setRows(data.items || []);
       setRowCount(data.total || 0);
+
+      // Update chart data if stats are included
+      if (data.stats) {
+        // Update Type_Acc chart data
+        if (data.stats.typeAccStats) {
+          setTypeAccData(prev => ({
+            ...prev,
+            labels: data.stats.typeAccStats.map(item => item.Type_Acc),
+            datasets: [{
+              ...prev.datasets[0],
+              data: data.stats.typeAccStats.map(item => item.count)
+            }]
+          }));
+        }
+
+        // Update Nature_op chart data
+        if (data.stats.natureStats) {
+          setNatureData(prev => ({
+            ...prev,
+            labels: data.stats.natureStats.map(item => item.Nature_op),
+            datasets: [{
+              ...prev.datasets[0],
+              data: data.stats.natureStats.map(item => item.count)
+            }]
+          }));
+        }
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -208,72 +244,8 @@ export default function SinistresPage() {
     }
   };
 
-  const fetchChartData = async () => {
-    try {
-      // Build query parameters using the same filters as the table
-      const params = new URLSearchParams();
-
-      if (debouncedClientSearch) {
-        params.append("clientSearch", debouncedClientSearch);
-      }
-
-      if (typeFilter) {
-        params.append("typeFilter", typeFilter);
-      }
-
-      if (debouncedDateAfter) {
-        params.append("dateAfter", debouncedDateAfter);
-      }
-
-      if (debouncedDateBefore) {
-        params.append("dateBefore", debouncedDateBefore);
-      }
-
-      if (filterModel.items.length > 0) {
-        params.append("filters", JSON.stringify(filterModel.items));
-      }
-
-      // Fetch statistics for Type_Acc with filters
-      const typeAccResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/sinistres_by_type_acc?${params.toString()}`
-      );
-      const typeAccStats = await typeAccResponse.json();
-      
-      // Fetch statistics for Nature_op with filters
-      const natureResponse = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/sinistres_by_nature?${params.toString()}`
-      );
-      const natureStats = await natureResponse.json();
-
-      // Update Type_Acc chart data
-      setTypeAccData(prev => ({
-        ...prev,
-        labels: typeAccStats.map(item => item.Type_Acc),
-        datasets: [{
-          ...prev.datasets[0],
-          data: typeAccStats.map(item => item.count)
-        }]
-      }));
-
-      // Update Nature_op chart data
-      setNatureData(prev => ({
-        ...prev,
-        labels: natureStats.map(item => item.Nature_op),
-        datasets: [{
-          ...prev.datasets[0],
-          data: natureStats.map(item => item.count)
-        }]
-      }));
-    } catch (error) {
-      console.error("Error fetching chart data:", error);
-    }
-  };
-
   useEffect(() => {
-    const fetchAllData = async () => {
-      await Promise.all([fetchData(), fetchChartData()]);
-    };
-    fetchAllData();
+    fetchData();
   }, [
     paginationModel.page,
     paginationModel.pageSize,
@@ -401,7 +373,16 @@ export default function SinistresPage() {
     plugins: {
       legend: {
         position: "top",
-      },
+        display: true,
+        labels: {
+          padding: 20,
+          font: {
+            size: 12
+          },
+          usePointStyle: true,
+          boxWidth: 10
+        }
+      }
     },
     scales: {
       y: {
@@ -424,6 +405,23 @@ export default function SinistresPage() {
           size: 16,
         },
       },
+      legend: {
+        ...chartOptions.plugins.legend,
+        labels: {
+          ...chartOptions.plugins.legend.labels,
+          generateLabels: (chart) => {
+            const datasets = chart.data.datasets;
+            return chart.data.labels.map((label, i) => ({
+              text: `${label} (${datasets[0].data[i]})`,
+              fillStyle: datasets[0].backgroundColor[i],
+              strokeStyle: datasets[0].borderColor[i],
+              lineWidth: 1,
+              hidden: false,
+              index: i
+            }));
+          }
+        }
+      }
     },
   };
 
@@ -438,6 +436,23 @@ export default function SinistresPage() {
           size: 16,
         },
       },
+      legend: {
+        ...chartOptions.plugins.legend,
+        labels: {
+          ...chartOptions.plugins.legend.labels,
+          generateLabels: (chart) => {
+            const datasets = chart.data.datasets;
+            return chart.data.labels.map((label, i) => ({
+              text: `${label} (${datasets[0].data[i]})`,
+              fillStyle: datasets[0].backgroundColor[i],
+              strokeStyle: datasets[0].borderColor[i],
+              lineWidth: 1,
+              hidden: false,
+              index: i
+            }));
+          }
+        }
+      }
     },
   };
 
@@ -566,8 +581,12 @@ export default function SinistresPage() {
             <h3 className="text-xl font-semibold text-gray-800 mb-6">
               Distribution par Type d'Accident
             </h3>
-            <div className="h-80 w-full">
-              <Bar data={typeAccData} options={typeAccOptions} />
+            <div className="h-[500px] w-full">
+              <Bar data={typeAccData} options={{
+                ...typeAccOptions,
+                maintainAspectRatio: false,
+                responsive: true
+              }} />
             </div>
           </div>
         </Card>
@@ -577,8 +596,12 @@ export default function SinistresPage() {
             <h3 className="text-xl font-semibold text-gray-800 mb-6">
               Distribution par Nature de Sinistre
             </h3>
-            <div className="h-80 w-full">
-              <Bar data={natureData} options={natureOptions} />
+            <div className="h-[500px] w-full">
+              <Bar data={natureData} options={{
+                ...natureOptions,
+                maintainAspectRatio: false,
+                responsive: true
+              }} />
             </div>
           </div>
         </Card>

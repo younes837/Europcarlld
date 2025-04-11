@@ -34,9 +34,8 @@ export default function PageActuel() {
   const [fournisseurSearch, setFournisseurSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
-  const [isSearching, setIsSearching] = useState(false);
 
-  const fetchData = async (
+  const fetchData = useCallback(async (
     page,
     pageSize,
     sortField,
@@ -74,7 +73,6 @@ export default function PageActuel() {
       }
 
       const data = await response.json();
-      console.log(data)
       setRows(data.items || []);
       setRowCount(data.total || 0);
     } catch (error) {
@@ -82,10 +80,10 @@ export default function PageActuel() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fournisseurSearch]);
 
   // Fetch all data for export
-  const fetchAllData = async () => {
+  const fetchAllData = useCallback(async () => {
     try {
       setExportLoading(true);
       const response = await fetch(
@@ -101,10 +99,9 @@ export default function PageActuel() {
     } finally {
       setExportLoading(false);
     }
-  };
+  }, [fournisseurSearch]);
 
   useEffect(() => {
-    // Get sorting parameters
     const sortField = sortModel.length > 0 ? sortModel[0].field : null;
     const sortOrder = sortModel.length > 0 ? sortModel[0].sort : null;
 
@@ -115,28 +112,22 @@ export default function PageActuel() {
       sortOrder,
       filterModel.items
     );
-  }, [paginationModel, sortModel, filterModel, fournisseurSearch]); // Refetch when fournisseur search changes
+  }, [paginationModel, sortModel, filterModel, fetchData]);
 
-  // Handle client search with debounce
+  // Handle fournisseur search with debounce
   const handleFournisseurSearch = useCallback(
     (e) => {
       const value = e.target.value;
-      setSearchInput(value); // Update the input value immediately for responsiveness
+      setSearchInput(value);
 
-      // Clear previous timeout
       if (searchTimeout) {
         clearTimeout(searchTimeout);
       }
 
-      // Set searching state to true
-      setIsSearching(true);
-
-      // Set new timeout for debounce
       const timeout = setTimeout(() => {
-        setFournisseurSearch(value); // Update the actual search value after delay
-        setPaginationModel((prev) => ({ ...prev, page: 0 })); // Reset to first page
-        setIsSearching(false);
-      }, 1000); // Increased debounce time to 500ms for better performance
+        setFournisseurSearch(value);
+        setPaginationModel((prev) => ({ ...prev, page: 0 }));
+      }, 300);
 
       setSearchTimeout(timeout);
     },
@@ -153,11 +144,10 @@ export default function PageActuel() {
   }, [searchTimeout]);
 
   // Export to Excel
-  const exportToExcel = async () => {
+  const exportToExcel = useCallback(async () => {
     try {
       setExportLoading(true);
 
-      // Fetch all data for export
       const exportData = await fetchAllData();
 
       if (exportData.length === 0) {
@@ -165,7 +155,6 @@ export default function PageActuel() {
         return;
       }
 
-      // Prepare data for export
       const formattedData = exportData.map((row) => ({
         "NumCommande": row.NumCommande,
         "DateCommande": row.DateCommande,
@@ -176,14 +165,10 @@ export default function PageActuel() {
         "MontantTTC": row.MontantTTC,
       }));
 
-      // Create worksheet
       const ws = XLSX.utils.json_to_sheet(formattedData);
-
-      // Create workbook
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Commandes en cours");
 
-      // Save file
       XLSX.writeFile(
         wb,
         `commandes_en_cours_${new Date().toISOString().split("T")[0]}.xlsx`
@@ -193,7 +178,7 @@ export default function PageActuel() {
     } finally {
       setExportLoading(false);
     }
-  };
+  }, [fetchAllData]);
 
   return (
     <div className="px-4">
@@ -213,6 +198,7 @@ export default function PageActuel() {
               value={searchInput}
               onChange={handleFournisseurSearch}
               className="pl-8"
+              autoComplete="off"
             />
           </div>
         </div>
