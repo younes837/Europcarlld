@@ -7,6 +7,7 @@ import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import * as XLSX from "xlsx";
+import frFR from "../frFR";
 
 const columns = [
   { field: "Contrat", headerName: "Contrat", width: 150 },
@@ -37,6 +38,7 @@ export default function ListeEntretiens() {
   const [clientSearchInput, setClientSearchInput] = useState("");
   const [immatriculationSearchInput, setImmatriculationSearchInput] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
+  const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState({
     totalMontantHT: 0,
@@ -143,10 +145,20 @@ export default function ListeEntretiens() {
   // Handle search with debounce
   const handleSearch = useCallback(
     (value, type) => {
+      // Update the input value immediately for responsiveness
+      if (type === 'client') {
+        setClientSearchInput(value);
+      } else {
+        setImmatriculationSearchInput(value);
+      }
+
       // Clear previous timeout
       if (searchTimeout) {
         clearTimeout(searchTimeout);
       }
+
+      // Set searching state to true
+      setIsSearching(true);
 
       // Set new timeout for debounce
       const timeout = setTimeout(() => {
@@ -156,7 +168,8 @@ export default function ListeEntretiens() {
           setImmatriculationSearch(value);
         }
         setPaginationModel((prev) => ({ ...prev, page: 0 })); // Reset to first page
-      }, 300);
+        setIsSearching(false);
+      }, 1000); // Increased debounce time to 500ms for better performance
 
       setSearchTimeout(timeout);
     },
@@ -221,41 +234,41 @@ export default function ListeEntretiens() {
       </h2>
 
       <div className="grid grid-cols-4 gap-6 mb-8">
-        <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-blue-600 mb-2">Montant Total HT</p>
-              <div title={summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-blue-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Montant Total HT</p>
+              <div title={summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-green-50 to-white border-green-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-green-600 mb-2">Nombre D'entretiens</p>
-              <div title={summary.totalEntretiens.toLocaleString('fr-FR')} className="text-2xl font-bold text-green-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Nombre D'entretiens</p>
+              <div title={summary.totalEntretiens.toLocaleString('fr-FR')} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.totalEntretiens.toLocaleString('fr-FR')}
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-50 to-white border-purple-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-purple-600 mb-2">Montant Moyen</p>
-              <div title={summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-purple-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Montant Moyen</p>
+              <div title={summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-orange-50 to-white border-orange-100 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-orange-600 mb-2">Marques Uniques</p>
-              <div title={summary.uniqueMarques.toLocaleString('fr-FR')} className="text-2xl font-bold text-orange-900 truncate">
+              <p className="text-sm font-medium text-slate-800 mb-2">Marques Uniques</p>
+              <div title={summary.uniqueMarques.toLocaleString('fr-FR')} className="text-2xl font-bold text-slate-950 truncate">
                 {summary.uniqueMarques.toLocaleString('fr-FR')}
               </div>
             </div>
@@ -281,12 +294,12 @@ export default function ListeEntretiens() {
                 id="client-search"
                 placeholder="Nom du client..."
                 value={clientSearchInput}
-                onChange={(e) => {
-                  setClientSearchInput(e.target.value);
-                  handleSearch(e.target.value, 'client');
-                }}
+                onChange={(e) => handleSearch(e.target.value, 'client')}
                 className="pl-8"
               />
+              {isSearching && clientSearchInput && (
+                <div className="absolute right-2 top-2.5 h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+              )}
             </div>
           </div>
           <div className="w-64">
@@ -299,10 +312,7 @@ export default function ListeEntretiens() {
                 id="immatriculation-search"
                 placeholder="Immatriculation..."
                 value={immatriculationSearchInput}
-                onChange={(e) => {
-                  setImmatriculationSearchInput(e.target.value);
-                  handleSearch(e.target.value, 'immatriculation');
-                }}
+                onChange={(e) => handleSearch(e.target.value, 'immatriculation')}
                 className="pl-8"
               />
             </div>
@@ -338,6 +348,7 @@ export default function ListeEntretiens() {
           getRowId={(row) => row.id}
           disableRowSelectionOnClick
           className="bg-white"
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
         />
       </div>
     </div>
