@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { FileDown, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import * as XLSX from "xlsx";
-import axios from "axios";
 
 const columns = [
   { field: "F091IMMA", headerName: "Immatriculation", width: 150 },
@@ -41,17 +40,21 @@ export default function EntretienMatricule() {
     setError(null);
   
     try {
-      const params = {
+      const params = new URLSearchParams({
         search: matricule,
-        dateDebut: startDate || undefined,
-        dateFin: endDate || undefined,
+        ...(startDate && { dateDebut: startDate }),
+        ...(endDate && { dateFin: endDate }),
         page: 1,
-        pageSize: 1000, 
-      };
+        pageSize: 1000
+      });
   
-      const response = await axios.get("http://localhost:3000/api/entretien_matricule");
-      setData(response.data.items);
-      setFilteredData(response.data.items);
+      const response = await fetch(`http://localhost:3000/api/entretien_matricule?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const jsonData = await response.json();
+      setData(jsonData.items);
+      setFilteredData(jsonData.items);
     } catch (err) {
       console.error("Erreur lors de la récupération des données:", err);
       setError("Échec de la récupération des données.");

@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,9 +33,17 @@ const OldPneuData = () => {
     setError(null);
 
     try {
-      const apiResponse = await axios.get(`${API_URL}?nom_client=${nomClient.trim() || ''}`);
-      setData(apiResponse.data);
-      setFilteredData(apiResponse.data);
+      const params = new URLSearchParams({
+        nom_client: nomClient.trim() || ''
+      });
+
+      const response = await fetch(`${API_URL}?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const jsonData = await response.json();
+      setData(jsonData);
+      setFilteredData(jsonData);
     } catch (err) {
       console.error("Erreur lors de la récupération des données:", err);
       setError("Échec de la récupération des données. Veuillez réessayer.");
@@ -315,6 +322,7 @@ const OldPneuData = () => {
           pageSizeOptions={[5, 10, 20]}
           sortingMode="client"
           paginationMode="client"
+          loading={loading}
           className="bg-white"
         />
       </div>

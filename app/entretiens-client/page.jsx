@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,10 +56,14 @@ const ClientDataTable = () => {
       if (startDate) params.append('date_debut', startDate);
       if (endDate) params.append('date_fin', endDate);
 
-      const response = await axios.get(`${API_URL}?${params.toString()}`);
-      setData(response.data.items);
-      setRowCount(response.data.total);
-      setSummary(response.data.summary);
+      const response = await fetch(`${API_URL}?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const jsonData = await response.json();
+      setData(jsonData.items);
+      setRowCount(jsonData.total);
+      setSummary(jsonData.summary);
     } catch (err) {
       console.error("Erreur lors de la récupération des données:", err);
       setError("Échec de la récupération des données.");
