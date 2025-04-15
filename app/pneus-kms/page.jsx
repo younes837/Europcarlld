@@ -4,9 +4,10 @@ import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import * as XLSX from "xlsx";
 
 const OldPneuData = () => {
   const [data, setData] = useState([]);
@@ -26,6 +27,7 @@ const OldPneuData = () => {
       sort: 'desc',
     },
   ]);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const API_URL = "http://localhost:3001/api/old_pneu_kms";
 
@@ -178,6 +180,37 @@ const OldPneuData = () => {
     { field: "PNEU_CONSOMME", headerName: "Consommation Pneu", width: 100 },
   ];
 
+  // Fonction d'export Excel
+  const exportToExcel = async () => {
+    try {
+      setExportLoading(true);
+      
+      const exportData = filteredData.map(row => ({
+        "Client": row.F050NOM,
+        "Contrat": row.F470CONTRAT,
+        "Marque": row.F090LIB,
+        "Date Départ": row.F470DTDEP,
+        "Date Arrivée Prv": row.F470DTARRP,
+        "Date Arrivée Réelle": row.F470DTARR,
+        "Durée": row.F470DUREE,
+        "KM Affecté": row.F470KMAFF,
+        "Dernier KM": row.F090KM,
+        "Dotation Pneu": row.F470NBPNEUS,
+        "Consommation Pneu": row.PNEU_CONSOMME
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pneus et Kilométrage");
+
+      XLSX.writeFile(wb, `pneus_kms_${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch (error) {
+      console.error("Erreur lors de l'export Excel:", error);
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   return (
     <div className="px-4">
       <h2 className="mt-10 scroll-m-20 pb-2 text-3xl text-muted-foreground mb-4 font-semibold tracking-tight transition-colors first:mt-0">
@@ -293,10 +326,20 @@ const OldPneuData = () => {
             />
           </div>
         </div>
-        <Button onClick={fetchData} className="flex items-center gap-2">
-          <Search className="h-4 w-4" />
-          Rechercher
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={fetchData} className="flex items-center gap-2">
+            <Search className="h-4 w-4" />
+            Rechercher
+          </Button>
+          <Button 
+            onClick={exportToExcel} 
+            className="flex items-center gap-2"
+            disabled={exportLoading}
+          >
+            <FileDown className="h-4 w-4" />
+            {exportLoading ? "Exportation..." : "Exporter vers Excel"}
+          </Button>
+        </div>
       </div>
 
       {loading && <div className="loader2"></div>}

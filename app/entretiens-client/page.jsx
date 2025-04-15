@@ -1,22 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import Loader from "./TableLoader";
 import CardLoader from "./CardsLoader";
 import CardsLoader from "./CardsLoader";
 import InputsLoader from "./InputsLoader";
+import * as XLSX from "xlsx";
 
 const ClientDataTable = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(true);
+  const [exportLoading, setExportLoading] = useState(false);
   const [error, setError] = useState(null);
   const [nomClient, setNomClient] = useState("");
   const [startDate, setStartDate] = useState("");
@@ -56,11 +57,15 @@ const ClientDataTable = () => {
       if (nomClient) params.append('nom_client', nomClient);
       if (startDate) params.append('date_debut', startDate);
       if (endDate) params.append('date_fin', endDate);
-
-      const response = await axios.get(`${API_URL}?${params.toString()}`);
-      setData(response.data.items);
-      setRowCount(response.data.total);
-      setSummary(response.data.summary);
+     
+      const response = await fetch(`${API_URL}?${params.toString()}`);
+      if(!response.ok) {
+        throw new Error('Network reponse was not ok')
+      }
+      const jsonData = await response.json();
+      setData(jsonData.items);
+      setRowCount(jsonData.total);
+      setSummary(jsonData.summary);
     } catch (err) {
       console.error("Erreur lors de la récupération des données:", err);
       setError("Échec de la récupération des données.");
@@ -83,6 +88,34 @@ const ClientDataTable = () => {
     { field: "F400FACDT", headerName: "Date", width: 150 },
     { field: "F050NOM", headerName: "Nom Client", width: 200 },
   ];
+
+  // Fonction d'export Excel
+  const exportToExcel = async () => {
+    try {
+      setExportLoading(true);
+      
+      const exportData = data.map(row => ({
+        "Immatriculation": row.F091IMMA,
+        "Marque": row.F090LIB,
+        "N° Document": row.F400NMDOC,
+        "Montant HT": row.F410MTHT,
+        "Code Produit": row.K410100PRO,
+        "Libellé": row.F410LIB,
+        "Date": row.F400FACDT,
+        "Nom Client": row.F050NOM
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Entretiens Client");
+
+      XLSX.writeFile(wb, `entretiens_client_${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch (error) {
+      console.error("Erreur lors de l'export Excel:", error);
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   return (
     <div className="px-4">
@@ -180,6 +213,14 @@ const ClientDataTable = () => {
             />
           </div>
         </div>
+        <Button 
+          onClick={exportToExcel} 
+          className="flex items-center gap-2"
+          disabled={exportLoading}
+        >
+          <FileDown className="h-4 w-4" />
+          {exportLoading ? "Exportation..." : "Exporter vers Excel"}
+        </Button>
       </div>
       }
       {loading2 ? <Loader/> :

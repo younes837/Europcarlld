@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,9 @@ const columns = [
   { field: "F050NOM", headerName: "Nom Client", width: 200 },
 ];
 
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function EntretienMatricule() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -30,6 +33,46 @@ export default function EntretienMatricule() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [exporting, setExporting] = useState(false);
+  const [paginationModel, setPaginationModel] = useState({
+    page: 0,
+    pageSize: 50,
+  });
+  const [totalRows, setTotalRows] = useState(0);
+  const [summary, setSummary] = useState({
+    totalMontant: 0,
+    totalEntretiens: 0,
+    montantMoyen: 0,
+    uniqueVehiclesCount: 0,
+  });
+
+  // Chargement initial des données
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({
+          page: (paginationModel.page + 1).toString(),
+          pageSize: paginationModel.pageSize.toString(),
+        });
+
+        const response = await axios.get(`${API_URL}/entretien_matricule?${params.toString()}`);
+        
+        if (response.data) {
+          setData(response.data.items);
+          setFilteredData(response.data.items);
+          setTotalRows(response.data.total);
+          setSummary(response.data.summary);
+        }
+      } catch (err) {
+        console.error("Erreur lors du chargement initial:", err);
+        setError("Échec du chargement initial des données.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, [paginationModel.page, paginationModel.pageSize]);
 
   const fetchData = async () => {
     if (!matricule.trim()) {
@@ -41,17 +84,22 @@ export default function EntretienMatricule() {
     setError(null);
   
     try {
-      const params = {
-        search: matricule,
+      const params = new URLSearchParams({
+        matricule: matricule,
         dateDebut: startDate || undefined,
         dateFin: endDate || undefined,
-        page: 1,
-        pageSize: 1000, 
-      };
+        page: (paginationModel.page + 1).toString(),
+        pageSize: paginationModel.pageSize.toString(),
+      });
   
-      const response = await axios.get("http://localhost:3000/api/entretien_matricule");
-      setData(response.data.items);
-      setFilteredData(response.data.items);
+      const response = await axios.get(`${API_URL}/entretien_matricule?${params.toString()}`);
+      
+      if (response.data) {
+        setData(response.data.items);
+        setFilteredData(response.data.items);
+        setTotalRows(response.data.total);
+        setSummary(response.data.summary);
+      }
     } catch (err) {
       console.error("Erreur lors de la récupération des données:", err);
       setError("Échec de la récupération des données.");
@@ -60,10 +108,10 @@ export default function EntretienMatricule() {
     }
   };
 
-  const applyDateFilter = useCallback(() => {
+  // Optimisation du filtrage des dates avec useMemo
+  const filteredDataMemo = useMemo(() => {
     if (!startDate || !endDate) {
-      setFilteredData(data);
-      return;
+      return data;
     }
 
     const start = new Date(startDate);
@@ -71,20 +119,18 @@ export default function EntretienMatricule() {
 
     if (start > end) {
       setError("La date de début doit être antérieure à la date de fin.");
-      return;
+      return data;
     }
 
-    const filtered = data.filter((row) => {
+    return data.filter((row) => {
       const date = new Date(row.F400FACDT);
       return date >= start && date <= end;
     });
-
-    setFilteredData(filtered);
   }, [startDate, endDate, data]);
 
   useEffect(() => {
-    applyDateFilter();
-  }, [startDate, endDate, data, applyDateFilter]);
+    setFilteredData(filteredDataMemo);
+  }, [filteredDataMemo]);
 
   const handleExport = () => {
     setExporting(true);
@@ -111,13 +157,6 @@ export default function EntretienMatricule() {
     }
   };
 
-  const totalEntretien = filteredData.length;
-  const uniqueVehiclesCount = new Set(filteredData.map((item) => item.F091IMMA)).size;
-  const totalMontant = filteredData.reduce(
-    (sum, item) => sum + parseFloat(item.F410MTHT || 0),
-    0
-  );
-
   return (
     <div className="px-4">
       <div className="flex justify-between items-center mb-6">
@@ -140,7 +179,7 @@ export default function EntretienMatricule() {
             <div className="flex flex-col">
               <p className="text-sm font-medium text-blue-600 mb-2">Total Montant HT</p>
               <div className="text-2xl font-bold text-blue-900 truncate">
-                {totalMontant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
+                {summary.totalMontant.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
               </div>
             </div>
           </CardContent>
@@ -150,7 +189,7 @@ export default function EntretienMatricule() {
             <div className="flex flex-col">
               <p className="text-sm font-medium text-green-600 mb-2">Nombre D'entretiens</p>
               <div className="text-2xl font-bold text-green-900 truncate">
-                {totalEntretien.toLocaleString('fr-FR')}
+                {summary.totalEntretiens.toLocaleString('fr-FR')}
               </div>
             </div>
           </CardContent>
@@ -160,7 +199,7 @@ export default function EntretienMatricule() {
             <div className="flex flex-col">
               <p className="text-sm font-medium text-purple-600 mb-2">Montant Moyen</p>
               <div className="text-2xl font-bold text-purple-900 truncate">
-                {(totalMontant / (totalEntretien || 1)).toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
+                {summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
               </div>
             </div>
           </CardContent>
@@ -170,7 +209,7 @@ export default function EntretienMatricule() {
             <div className="flex flex-col">
               <p className="text-sm font-medium text-orange-600 mb-2">Véhicules Uniques</p>
               <div className="text-2xl font-bold text-orange-900 truncate">
-                {uniqueVehiclesCount.toLocaleString('fr-FR')}
+                {summary.uniqueVehiclesCount.toLocaleString('fr-FR')}
               </div>
             </div>
           </CardContent>
@@ -226,10 +265,13 @@ export default function EntretienMatricule() {
       {loading && <div className="loader2"></div>}
       <div className="h-[75vh]">
         <DataGrid
-          rows={filteredData.map((row, index) => ({ id: index, ...row }))}
+          rows={filteredData}
           columns={columns}
           pageSizeOptions={[10, 20, 50]}
-          pagination
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          paginationMode="server"
+          rowCount={totalRows}
           loading={loading}
           className="bg-white"
         />

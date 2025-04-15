@@ -101,8 +101,21 @@ const Lld = () => {
     }
 
     const renderTooltipWithoutRange = ({ payload, content, ...rest }) => {
-        const newPayload = payload.filter((x) => x.dataKey !== "range");
+        const newPayload = payload.filter((x) => x.dataKey !== "range").map(item => ({
+            ...item,
+            name: "Chiffre d'affaire",
+            value: formatNumber(item.value)
+        }));
         return <Tooltip payload={newPayload} {...rest} />;
+    }
+
+    const formatNumber = (num) => {
+        const number = Number(num);
+        if (isNaN(number)) return '0,00';
+        
+        const parts = number.toFixed(2).split('.');
+        const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        return `${integerPart},${parts[1]}`;
     }
 
     const renderLegendWithoutRange = ({ payload, content, ...rest }) => {
