@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import * as echarts from "echarts";
-import SkeletonCard from "./SkeletonCard";
+import SkeletonCard from "./Loader";
 import { Skeleton } from "../ui/skeleton";
 
 function PieChart() {
@@ -57,8 +57,16 @@ function PieChart() {
           radius: "50%",
           data: chartData,
           color: [
-            '#11261c', '#1a3d2d', '#22573d', '#2c714e', '#38915f',
-            '#46b170', '#5dcc85', '#7ae09a', '#9ef4b4', '#c2fbd0', '#e6fff0'
+            '#15803d', 
+            '#16a34a',
+            '#22c55e',
+            '#4ade80',
+            '#059669',
+            '#10b981',
+            '#34d399',
+            '#84cc16',
+            '#a3e635',
+            '#65a30d', 
           ],
           emphasis: {
             itemStyle: {

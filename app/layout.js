@@ -23,8 +23,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
+        suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased  theme-blue-scaled theme-scaled`}
       >
+        <RemoveShortcutListener />
         <SidebarProvider
           style={{
             "--sidebar-width": "calc(var(--spacing) * 72)",

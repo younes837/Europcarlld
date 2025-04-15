@@ -1,7 +1,7 @@
 import { CardLoader } from "../ui/card-loader";
 import { Skeleton } from "../ui/skeleton";
 
-function SectionCardsLoader() {
+function Loader() {
     return (
         <div className="h-40 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-4">
             {[...Array(4)].map((_, index) => (
@@ -18,4 +18,4 @@ function SectionCardsLoader() {
     );
 }
 
-export default SectionCardsLoader;
+export default Loader;
