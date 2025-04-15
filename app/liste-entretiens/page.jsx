@@ -13,7 +13,7 @@ const columns = [
   { field: "NomClient", headerName: "Nom Client", width: 300 },
   { field: "Immatriculation", headerName: "Immatriculation", width: 150 },
   { field: "marque", headerName: "Marque", width: 300 },
-  { field: "MontantHT", headerName: "Montant HT", width: 150, type: 'number' },
+  { field: "MontantHT", headerName: "Montant HT", width: 150, type: "number" },
   { field: "LibelleLigne", headerName: "Libelle Ligne", width: 300 },
 ];
 
@@ -35,14 +35,15 @@ export default function ListeEntretiens() {
   const [clientSearch, setClientSearch] = useState("");
   const [immatriculationSearch, setImmatriculationSearch] = useState("");
   const [clientSearchInput, setClientSearchInput] = useState("");
-  const [immatriculationSearchInput, setImmatriculationSearchInput] = useState("");
+  const [immatriculationSearchInput, setImmatriculationSearchInput] =
+    useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState({
     totalMontantHT: 0,
     totalEntretiens: 0,
     montantMoyen: 0,
-    uniqueMarques: 0
+    uniqueMarques: 0,
   });
 
   const fetchData = async (
@@ -77,21 +78,23 @@ export default function ListeEntretiens() {
         params.append("immatriculationSearch", immatriculationSearch);
       }
 
-      const response = await fetch(`${API_URL}/list_entretien?${params.toString()}`);
+      const response = await fetch(
+        `${API_URL}/list_entretien?${params.toString()}`
+      );
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Error: ${response.statusText}`);
       }
 
       const data = await response.json();
-      
+
       if (!data.items) {
-        throw new Error('No items array in response');
+        throw new Error("No items array in response");
       }
 
-      const formattedData = data.items.map(item => ({
+      const formattedData = data.items.map((item) => ({
         ...item,
-        MontantHT: parseFloat(item.MontantHT)
+        MontantHT: parseFloat(item.MontantHT),
       }));
 
       setRows(formattedData);
@@ -111,10 +114,13 @@ export default function ListeEntretiens() {
       setExportLoading(true);
       const params = new URLSearchParams();
       if (clientSearch) params.append("clientSearch", clientSearch);
-      if (immatriculationSearch) params.append("immatriculationSearch", immatriculationSearch);
-      
+      if (immatriculationSearch)
+        params.append("immatriculationSearch", immatriculationSearch);
+
       const response = await fetch(
-        `${API_URL}/list_entretien?page=1&pageSize=10000${params.toString() ? '&' + params.toString() : ''}`
+        `${API_URL}/list_entretien?page=1&pageSize=10000${
+          params.toString() ? "&" + params.toString() : ""
+        }`
       );
       const data = await response.json();
       return data.items || [];
@@ -138,7 +144,13 @@ export default function ListeEntretiens() {
       sortOrder,
       filterModel.items
     );
-  }, [paginationModel, sortModel, filterModel, clientSearch, immatriculationSearch]);
+  }, [
+    paginationModel,
+    sortModel,
+    filterModel,
+    clientSearch,
+    immatriculationSearch,
+  ]);
 
   // Handle search with debounce
   const handleSearch = useCallback(
@@ -150,7 +162,7 @@ export default function ListeEntretiens() {
 
       // Set new timeout for debounce
       const timeout = setTimeout(() => {
-        if (type === 'client') {
+        if (type === "client") {
           setClientSearch(value);
         } else {
           setImmatriculationSearch(value);
@@ -178,10 +190,10 @@ export default function ListeEntretiens() {
 
       // Prepare data for export
       const formattedData = exportData.map((row) => ({
-        "Contrat": row.Contrat,
+        Contrat: row.Contrat,
         "Nom Client": row.NomClient,
-        "Immatriculation": row.Immatriculation,
-        "Marque": row.marque,
+        Immatriculation: row.Immatriculation,
+        Marque: row.marque,
         "Montant HT": row.MontantHT,
         "Libelle Ligne": row.LibelleLigne,
       }));
@@ -224,9 +236,19 @@ export default function ListeEntretiens() {
         <Card className="bg-gradient-to-br from-blue-50 to-white border-blue-100 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-blue-600 mb-2">Montant Total HT</p>
-              <div title={summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-blue-900 truncate">
-                {summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
+              <p className="text-sm font-medium text-blue-600 mb-2">
+                Montant Total HT
+              </p>
+              <div
+                title={summary.totalMontantHT.toLocaleString("fr-FR", {
+                  minimumFractionDigits: 2,
+                })}
+                className="text-2xl font-bold text-blue-900 truncate"
+              >
+                {summary.totalMontantHT.toLocaleString("fr-FR", {
+                  minimumFractionDigits: 2,
+                })}{" "}
+                DH
               </div>
             </div>
           </CardContent>
@@ -234,9 +256,14 @@ export default function ListeEntretiens() {
         <Card className="bg-gradient-to-br from-green-50 to-white border-green-100 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-green-600 mb-2">Nombre D'entretiens</p>
-              <div title={summary.totalEntretiens.toLocaleString('fr-FR')} className="text-2xl font-bold text-green-900 truncate">
-                {summary.totalEntretiens.toLocaleString('fr-FR')}
+              <p className="text-sm font-medium text-green-600 mb-2">
+                Nombre D'entretiens
+              </p>
+              <div
+                title={summary.totalEntretiens.toLocaleString("fr-FR")}
+                className="text-2xl font-bold text-green-900 truncate"
+              >
+                {summary.totalEntretiens.toLocaleString("fr-FR")}
               </div>
             </div>
           </CardContent>
@@ -244,9 +271,19 @@ export default function ListeEntretiens() {
         <Card className="bg-gradient-to-br from-purple-50 to-white border-purple-100 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-purple-600 mb-2">Montant Moyen</p>
-              <div title={summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-purple-900 truncate">
-                {summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
+              <p className="text-sm font-medium text-purple-600 mb-2">
+                Montant Moyen
+              </p>
+              <div
+                title={summary.montantMoyen.toLocaleString("fr-FR", {
+                  minimumFractionDigits: 2,
+                })}
+                className="text-2xl font-bold text-purple-900 truncate"
+              >
+                {summary.montantMoyen.toLocaleString("fr-FR", {
+                  minimumFractionDigits: 2,
+                })}{" "}
+                DH
               </div>
             </div>
           </CardContent>
@@ -254,15 +291,20 @@ export default function ListeEntretiens() {
         <Card className="bg-gradient-to-br from-orange-50 to-white border-orange-100 shadow-sm hover:shadow-md transition-shadow">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-orange-600 mb-2">Marques Uniques</p>
-              <div title={summary.uniqueMarques.toLocaleString('fr-FR')} className="text-2xl font-bold text-orange-900 truncate">
-                {summary.uniqueMarques.toLocaleString('fr-FR')}
+              <p className="text-sm font-medium text-orange-600 mb-2">
+                Marques Uniques
+              </p>
+              <div
+                title={summary.uniqueMarques.toLocaleString("fr-FR")}
+                className="text-2xl font-bold text-orange-900 truncate"
+              >
+                {summary.uniqueMarques.toLocaleString("fr-FR")}
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-      
+
       {error && (
         <div className="mb-4 p-4 text-red-500 bg-red-50 border border-red-200 rounded">
           Error: {error}
@@ -283,7 +325,7 @@ export default function ListeEntretiens() {
                 value={clientSearchInput}
                 onChange={(e) => {
                   setClientSearchInput(e.target.value);
-                  handleSearch(e.target.value, 'client');
+                  handleSearch(e.target.value, "client");
                 }}
                 className="pl-8"
               />
@@ -301,7 +343,7 @@ export default function ListeEntretiens() {
                 value={immatriculationSearchInput}
                 onChange={(e) => {
                   setImmatriculationSearchInput(e.target.value);
-                  handleSearch(e.target.value, 'immatriculation');
+                  handleSearch(e.target.value, "immatriculation");
                 }}
                 className="pl-8"
               />
@@ -319,7 +361,7 @@ export default function ListeEntretiens() {
       </div>
 
       {loading && <div className="loader2"></div>}
-      <div style={{ height: 600, width: '100%' }}>
+      <div style={{ height: 600, width: "100%" }}>
         <DataGrid
           rows={rows}
           columns={columns}
