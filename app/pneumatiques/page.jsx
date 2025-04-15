@@ -3,36 +3,28 @@ import React, { useEffect, useState, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileDown, Eye } from "lucide-react";
+import { Search, FileDown, Eye, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
 import frFR from "../frFR";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const columns = [
-  { 
-    field: "actions", 
-    headerName: "Actions", 
-    width: 100,
-    renderCell: (params) => (
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => handleViewDetails(params.row)}
-        className="h-8 w-8 p-0"
-      >
-        <Eye className="h-4 w-4" />
-      </Button>
-    ),
-  },
-  { field: "CLIENT", headerName: "Client", width: 200 },
-  { field: "number_of_vehicles", headerName: "Nombre de Véhicules", width: 160, type: "number" },
-  { field: "total_pneu_consommé", headerName: "Total Pneus Consommés", width: 180, type: "number" },
-  { field: "total_pneu_dotation", headerName: "Total Pneus Dotation", width: 180, type: "number" },
-  { field: "oldest_contract_date", headerName: "Date Contrat Plus Ancien", width: 180 },
-  { field: "consommation_moyenne", headerName: "Consommation Moyenne par Véhicule", width: 220, type: "number" },
-  { field: "total_montant", headerName: "Total Montant", width: 150, type: "number" },
+// Define columns for the details table
+const detailsColumns = [
+  { field: "F090KY", headerName: "Offre", width: 100 },
+  { field: "F091IMMA", headerName: "Immatriculation", width: 120 },
+  { field: "F050NOMPRE", headerName: "Client", width: 150 },
+  { field: "F050NOM", headerName: "Fournisseur", width: 150 },
+  // { field: "Code", headerName: "Code Client", width: 120 },
+  { field: "F090LIB", headerName: "Marque", width: 150 },
+  { field: "F410LIB", headerName: "Dimension", width: 150 },
+  { field: "F410MTHT", headerName: "Montant HT", width: 120, type: "number" },
+  // { field: "K410100PRO", headerName: "Code Produit", width: 120 },
+  { field: "F400NMDOC", headerName: "N° Document", width: 120 },
+  { field: "F410QT", headerName: "Quantité", width: 100, type: "number" },
+  { field: "F410VISKM", headerName: "Kilométrage", width: 120, type: "number" },
+  { field: "F400FACDT", headerName: "Date Facture", width: 120 },
 ];
 
 export default function PneumatiquesPage() {
@@ -60,6 +52,99 @@ export default function PneumatiquesPage() {
     total_montant: 0,
     client_count: 0,
   });
+  
+  // Add state for details dialog
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [clientDetails, setClientDetails] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+
+  // Function to handle viewing details
+  const handleViewDetails = async (row) => {
+    setSelectedClient(row);
+    try {
+      setDetailsLoading(true);
+      
+      // Debug log to see the row data
+      console.log('Row data:', row);
+      
+      // Use the correct code field from the row
+      const response = await fetch(`${API_URL}/detail_pneu_client?code=${row.code}`);
+      
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Fetched details:', data); // Debug log to see the response data
+      setClientDetails(data);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error("Error fetching details:", error);
+      setError(error.message);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+  
+  // Function to export details to Excel
+  const exportDetailsToExcel = () => {
+    try {
+      if (clientDetails.length === 0) {
+        console.warn("No data to export");
+        return;
+      }
+
+      // Transform the data to use the display headers
+      const exportData = clientDetails.map(row => {
+        const transformedRow = {};
+        detailsColumns.forEach(column => {
+          if (column.field && !column.field.startsWith('actions')) { // Skip action columns
+            transformedRow[column.headerName] = row[column.field];
+          }
+        });
+        return transformedRow;
+      });
+      
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Details");
+      
+      XLSX.writeFile(
+        wb,
+        `pneumatiques_details_${selectedClient?.CLIENT || 'unknown'}_${new Date().toISOString().split("T")[0]}.xlsx`
+      );
+    } catch (error) {
+      console.error("Error exporting details to Excel:", error);
+      setError(error.message);
+    }
+  };
+
+  // Define columns for the main table
+  const columns = [
+    { 
+      field: "actions", 
+      headerName: "Action ", 
+      width: 100,
+      renderCell: (params) => (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => handleViewDetails(params.row)}
+          className="h-8 w-8 p-0"
+        >
+          <Eye className="h-4 w-4" />
+        </Button>
+      ),
+    },
+    { field: "CLIENT", headerName: "Client", width: 200 },
+    { field: "number_of_vehicles", headerName: "Nombre de Véhicules", width: 160, type: "number" },
+    { field: "total_pneu_consommé", headerName: "Total Pneus Consommés", width: 180, type: "number" },
+    { field: "total_pneu_dotation", headerName: "Total Pneus Dotation", width: 180, type: "number" },
+    { field: "oldest_contract_date", headerName: "Date Contrat Plus Ancien", width: 180 },
+    { field: "consommation_moyenne", headerName: "Consommation Moyenne par Véhicule", width: 220, type: "number" },
+    { field: "total_montant", headerName: "Total Montant", width: 150, type: "number" },
+  ];
 
   const fetchData = async () => {
     try {
@@ -136,8 +221,8 @@ export default function PneumatiquesPage() {
         number_of_vehicles: data.totals?.total_vehicles || 0,
         total_pneu_consommé: data.totals?.total_pneus_consommes || 0,
         total_pneu_dotation: data.totals?.total_pneus_dotation || 0,
-        total_montant: data.items.reduce((sum, row) => sum + (Number(row.total_montant) || 0), 0),
-        client_count: data.total || data.items.length,
+        total_montant: data.totals?.total_montant || 0,
+        client_count: data.totals?.total_clients || 0,
       };
       setTotals(calculatedTotals);
 
@@ -162,7 +247,7 @@ export default function PneumatiquesPage() {
       console.log("Totals row:", totalsRow);
 
       setRows([totalsRow, ...data.items]);
-      setRowCount(data.total || data.items.length);
+      setRowCount(data.total || 0);
     } catch (error) {
       console.error("Error fetching data:", error);
       setError(error.message);
@@ -328,12 +413,6 @@ export default function PneumatiquesPage() {
     [filterTimeout]
   );
 
-  const handleViewDetails = (row) => {
-    // Implement view details functionality
-    console.log("View details for:", row);
-    // You can navigate to a details page or open a modal here
-  };
-
   useEffect(() => {
     return () => {
       if (searchTimeout) {
@@ -409,6 +488,74 @@ export default function PneumatiquesPage() {
             return params.row.id === 'totals' ? 'bg-yellow-100' : '';
           }}
         />
+      </div>
+
+      {/* Full-screen Modal */}
+      <div className={`fixed inset-0 z-50 ${isModalOpen ? "block" : "hidden"}`}>
+        <div
+          className="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+          onClick={() => setIsModalOpen(false)}
+        ></div>
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
+            <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full max-w-[95vw]">
+              <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                <div className="flex items-center justify-between border-b pb-4">
+                  <h3 className="text-2xl font-semibold leading-6 text-gray-900">
+                    Détails des Pneumatiques - {selectedClient?.CLIENT}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      className="bg-primary"
+                      size="sm"
+                      onClick={exportDetailsToExcel}
+                      disabled={detailsLoading}
+                    >
+                      {detailsLoading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      ) : (
+                        <>
+                          <FileDown className="h-4 w-4 mr-2" />
+                          Exporter
+                        </>
+                      )}
+                    </Button>
+                    <button
+                      type="button"
+                      className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none"
+                      onClick={() => setIsModalOpen(false)}
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  {detailsLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                      <div className="loader2"></div>
+                    </div>
+                  ) : (
+                    <div style={{ height: '60vh', width: '100%' }}>
+                      <DataGrid
+                        rows={clientDetails}
+                        columns={detailsColumns}
+                        loading={detailsLoading}
+                        pageSizeOptions={[25, 50, 100]}
+                        paginationModel={{ page: 0, pageSize: 25 }}
+                        paginationMode="client"
+                        disableRowSelectionOnClick
+                        getRowId={(row) => `${row.F090KY}_${row.F091IMMA}_${row.F400NMDOC}`}
+                        className="bg-white"
+                        autoHeight={false}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
