@@ -3,7 +3,8 @@ import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
-import { Suspense } from "react";
+import RemoveShortcutListener from "./components/RemoveShortcutListener";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
