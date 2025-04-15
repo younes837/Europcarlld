@@ -14,6 +14,7 @@ import {
 } from "chart.js";
 import { Bar, Line } from "react-chartjs-2";
 import ContratParClient from "./components/ContratParClient";
+import ContratParClienPrive from "./components/ContratParClienPrive";
 
 // Register ChartJS components
 ChartJS.register(
@@ -27,7 +28,7 @@ ChartJS.register(
   LineElement
 );
 
-export default function page() {
+export default function SuiviMarches() {
   const [marcheData, setMarcheData] = useState({
     labels: [],
     datasets: [
@@ -288,7 +289,7 @@ export default function page() {
   };
 
   return (
-    <div className="px-4">
+    <div className="p-6">
       <h2 className="mt-10 scroll-m-20 pb-2 text-3xl text-muted-foreground mb-4 font-semibold tracking-tight transition-colors first:mt-0">
         Suivi des Marchés
       </h2>
@@ -340,7 +341,10 @@ export default function page() {
           )}
         </Card>
       </div>
-      <ContratParClient />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-1 mt-6">
+        <ContratParClient />
+        <ContratParClienPrive />
+      </div>
     </div>
   );
 }

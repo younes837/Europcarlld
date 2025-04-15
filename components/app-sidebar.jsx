@@ -33,7 +33,7 @@ import {
 import { Car, FolderClosed, SquareTerminal, Wrench } from "lucide-react";
 import Link from "next/link";
 
-const data = {
+export const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
@@ -158,7 +158,7 @@ export function AppSidebar({ ...props }) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-               <Link href="/">
+              <Link href="/">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold">Acme Inc.</span>
               </Link>

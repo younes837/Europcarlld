@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { FileDown, Search } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import * as XLSX from "xlsx";
-import axios from "axios";
 
 const columns = [
   { field: "F091IMMA", headerName: "Immatriculation", width: 150 },

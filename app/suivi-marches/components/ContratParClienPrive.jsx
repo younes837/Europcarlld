@@ -5,12 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, FileDown, Eye, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import * as XLSX from "xlsx";
 
 const columns = [
@@ -33,7 +27,7 @@ const columns = [
   { field: "nombre_contrats", headerName: "Nombre de Contrats", flex: 1 },
 ];
 
-export default function ContratParClient() {
+export default function ContratParClienPrive() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
@@ -99,7 +93,7 @@ export default function ContratParClient() {
       const response = await fetch(
         `${
           process.env.NEXT_PUBLIC_API_URL
-        }/contrats_par_client?${params.toString()}`
+        }/contrats_par_client_prive?${params.toString()}`
       );
       const data = await response.json();
 
@@ -121,15 +115,21 @@ export default function ContratParClient() {
   const handleViewClick = async (row) => {
     setSelectedClient(row);
     try {
+      if (!dateDebut || !dateFin) {
+        console.error("Invalid dates:", { dateDebut, dateFin });
+        return;
+      }
+
       const params = new URLSearchParams({
         dateDebut: dateDebut,
         dateFin: dateFin,
       });
 
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/marche_public/${
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/marche_prive/${
         row.code_client
       }?${params.toString()}`;
-      console.log("Fetching from URL:", url);
+      console.log("Debug - Fetching from URL:", url);
+      console.log("Debug - Dates:", { dateDebut, dateFin });
 
       const response = await fetch(url);
 
@@ -144,7 +144,8 @@ export default function ContratParClient() {
       }
 
       const data = await response.json();
-      console.log("Received data:", data);
+      console.log("Debug - Received data count:", data.length);
+      console.log("Debug - First few records:", data.slice(0, 2));
 
       setClientDetails(data);
       setIsModalOpen(true);
@@ -152,8 +153,44 @@ export default function ContratParClient() {
       console.error("Error fetching client details:", error);
       console.error("Error details:", {
         message: error.message,
-        stack: error.stack,
+        dates: { dateDebut, dateFin },
+        client: row,
       });
+    }
+  };
+
+  const handleExport = () => {
+    setExportLoading(true);
+    try {
+      // Prepare data for export
+      const exportData = clientDetails.map((detail) => ({
+        Contrat: detail.CONTRAT,
+        Durée: detail.DUREE,
+        KM: detail.KM,
+        "Marque Modèle": detail["marque modele"],
+        Immatriculation: detail.IMMA,
+        "Date Début": detail.Date_Debut,
+        "Date Arrivée Prévue": detail.Date_arrive_prevue,
+      }));
+
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Contrats");
+
+      // Generate file name
+      const fileName = `Contrats_${selectedClient?.client}_${
+        new Date().toISOString().split("T")[0]
+      }.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, fileName);
+    } catch (error) {
+      console.error("Error exporting data:", error);
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -207,45 +244,10 @@ export default function ContratParClient() {
     };
   }, [searchTimeout]);
 
-  const handleExport = () => {
-    setExportLoading(true);
-    try {
-      // Prepare data for export
-      const exportData = clientDetails.map((detail) => ({
-        Contrat: detail.CONTRAT,
-        Durée: detail.DUREE,
-        KM: detail.KM,
-        "Marque Modèle": detail["marque modele"],
-        Immatriculation: detail.IMMA,
-        "Date Début": detail.Date_Debut,
-        "Date Arrivée Prévue": detail.Date_arrive_prevue,
-      }));
-
-      // Create worksheet
-      const ws = XLSX.utils.json_to_sheet(exportData);
-
-      // Create workbook
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Contrats");
-
-      // Generate file name
-      const fileName = `Contrats_${selectedClient?.client}_${
-        new Date().toISOString().split("T")[0]
-      }.xlsx`;
-
-      // Save file
-      XLSX.writeFile(wb, fileName);
-    } catch (error) {
-      console.error("Error exporting data:", error);
-    } finally {
-      setExportLoading(false);
-    }
-  };
-
   return (
     <div className="p-6 mt-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center">
-        Contrats Public
+        Contrats Privé
       </h3>
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4">
         <div className="w-full sm:w-64">
@@ -290,7 +292,6 @@ export default function ContratParClient() {
       </div>
 
       {loading && <div className="loader2"></div>}
-      {/* <div className="h-[50vh] overflow-auto"> */}
       <DataGrid
         rows={rows}
         columns={columns}
@@ -309,7 +310,6 @@ export default function ContratParClient() {
         getRowId={(row) => row.code_client}
         disableRowSelectionOnClick
       />
-      {/* </div> */}
 
       {/* Full-screen Modal */}
       <div className={`fixed inset-0 z-50 ${isModalOpen ? "block" : "hidden"}`}>
@@ -328,7 +328,7 @@ export default function ContratParClient() {
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
-                      className={"bg-primary"}
+                      className="bg-primary"
                       size="sm"
                       onClick={handleExport}
                       disabled={exportLoading}
