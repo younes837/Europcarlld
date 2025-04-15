@@ -3,7 +3,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileDown } from "lucide-react";
+import { Search, FileDown, Car, DollarSign, Wrench } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import * as XLSX from "xlsx";
@@ -158,7 +158,7 @@ export default function ListeEntretiens() {
   const handleSearch = useCallback(
     (value, type) => {
       // Update the input value immediately for responsiveness
-      if (type === 'client') {
+      if (type === "client") {
         setClientSearchInput(value);
       } else {
         setImmatriculationSearchInput(value);
@@ -246,42 +246,91 @@ export default function ListeEntretiens() {
       </h2>
 
       <div className="grid grid-cols-4 gap-6 mb-8">
-        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-slate-800 mb-2">Montant Total HT</p>
-              <div title={summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-slate-950 truncate">
-                {summary.totalMontantHT.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Montant Total HT
+                </div>
+                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <DollarSign className="h-7 w-7 text-green-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {summary.totalMontantHT.toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  DH
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-slate-800 mb-2">Nombre D'entretiens</p>
-              <div title={summary.totalEntretiens.toLocaleString('fr-FR')} className="text-2xl font-bold text-slate-950 truncate">
-                {summary.totalEntretiens.toLocaleString('fr-FR')}
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Nombre D'entretiens
+                </div>
+                <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                  <Wrench className="h-7 w-7 text-yellow-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {summary.totalEntretiens.toLocaleString("fr-FR")}
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-slate-800 mb-2">Montant Moyen</p>
-              <div title={summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} className="text-2xl font-bold text-slate-950 truncate">
-                {summary.montantMoyen.toLocaleString('fr-FR', { minimumFractionDigits: 2 })} DH
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Montant Moyen
+                </div>
+                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <DollarSign className="h-7 w-7 text-green-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {summary.montantMoyen.toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  DH
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-slate-50 to-white border-slate-300 shadow-sm hover:shadow-md transition-shadow">
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
           <CardContent className="p-6">
             <div className="flex flex-col">
-              <p className="text-sm font-medium text-slate-800 mb-2">Marques Uniques</p>
-              <div title={summary.uniqueMarques.toLocaleString('fr-FR')} className="text-2xl font-bold text-slate-950 truncate">
-                {summary.uniqueMarques.toLocaleString('fr-FR')}
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Marques Uniques
+                </div>
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Car className="h-7 w-7 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {summary.uniqueMarques.toLocaleString("fr-FR")}
+                </div>
               </div>
             </div>
           </CardContent>
@@ -306,7 +355,7 @@ export default function ListeEntretiens() {
                 id="client-search"
                 placeholder="Nom du client..."
                 value={clientSearchInput}
-                onChange={(e) => handleSearch(e.target.value, 'client')}
+                onChange={(e) => handleSearch(e.target.value, "client")}
                 className="pl-8"
               />
               {isSearching && clientSearchInput && (
@@ -324,7 +373,9 @@ export default function ListeEntretiens() {
                 id="immatriculation-search"
                 placeholder="Immatriculation..."
                 value={immatriculationSearchInput}
-                onChange={(e) => handleSearch(e.target.value, 'immatriculation')}
+                onChange={(e) =>
+                  handleSearch(e.target.value, "immatriculation")
+                }
                 className="pl-8"
               />
             </div>

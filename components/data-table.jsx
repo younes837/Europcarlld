@@ -45,6 +45,7 @@ import {
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { toast } from "sonner"
 import { z } from "zod"
+import { memo, useCallback, useMemo } from "react";
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { Badge } from "@/components/ui/badge"
@@ -290,15 +291,14 @@ const columns = [
   },
 ]
 
-function DraggableRow({
-  row
-}) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
+// Memoize the DraggableRow component
+const DraggableRow = memo(function DraggableRow({ row }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: row.original.id,
-  })
+  });
 
   return (
-    (<TableRow
+    <TableRow
       data-state={row.getIsSelected() && "selected"}
       data-dragging={isDragging}
       ref={setNodeRef}
@@ -306,19 +306,173 @@ function DraggableRow({
       style={{
         transform: CSS.Transform.toString(transform),
         transition: transition,
-      }}>
+      }}
+      {...attributes}
+      {...listeners}
+    >
       {row.getVisibleCells().map((cell) => (
         <TableCell key={cell.id}>
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </TableCell>
       ))}
-    </TableRow>)
+    </TableRow>
   );
-}
+});
+
+DraggableRow.displayName = "DraggableRow";
+
+// Memoize the TableCellViewer component
+const TableCellViewer = memo(function TableCellViewer({ item }) {
+  const isMobile = useIsMobile();
+  
+  return (
+    <div className="flex flex-col gap-2">
+      {!isMobile && (
+        <>
+          <ChartContainer config={chartConfig}>
+            <AreaChart
+              accessibilityLayer
+              data={chartData}
+              margin={{
+                left: 0,
+                right: 10,
+              }}>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="month"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => value.slice(0, 3)}
+                hide />
+              <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+              <Area
+                dataKey="mobile"
+                type="natural"
+                fill="var(--color-mobile)"
+                fillOpacity={0.6}
+                stroke="var(--color-mobile)"
+                stackId="a" />
+              <Area
+                dataKey="desktop"
+                type="natural"
+                fill="var(--color-desktop)"
+                fillOpacity={0.4}
+                stroke="var(--color-desktop)"
+                stackId="a" />
+            </AreaChart>
+          </ChartContainer>
+          <Separator />
+          <div className="grid gap-2">
+            <div className="flex gap-2 leading-none font-medium">
+              Trending up by 5.2% this month{" "}
+              <IconTrendingUp className="size-4" />
+            </div>
+            <div className="text-muted-foreground">
+              Showing total visitors for the last 6 months. This is just
+              some random text to test the layout. It spans multiple lines
+              and should wrap around.
+            </div>
+          </div>
+          <Separator />
+        </>
+      )}
+      <form className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="header">Header</Label>
+          <Input id="header" defaultValue={item.header} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="type">Type</Label>
+            <Select defaultValue={item.type}>
+              <SelectTrigger id="type" className="w-full">
+                <SelectValue placeholder="Select a type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Table of Contents">
+                  Table of Contents
+                </SelectItem>
+                <SelectItem value="Executive Summary">
+                  Executive Summary
+                </SelectItem>
+                <SelectItem value="Technical Approach">
+                  Technical Approach
+                </SelectItem>
+                <SelectItem value="Design">Design</SelectItem>
+                <SelectItem value="Capabilities">Capabilities</SelectItem>
+                <SelectItem value="Focus Documents">
+                  Focus Documents
+                </SelectItem>
+                <SelectItem value="Narrative">Narrative</SelectItem>
+                <SelectItem value="Cover Page">Cover Page</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="status">Status</Label>
+            <Select defaultValue={item.status}>
+              <SelectTrigger id="status" className="w-full">
+                <SelectValue placeholder="Select a status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Done">Done</SelectItem>
+                <SelectItem value="In Progress">In Progress</SelectItem>
+                <SelectItem value="Not Started">Not Started</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="target">Target</Label>
+            <Input id="target" defaultValue={item.target} />
+          </div>
+          <div className="flex flex-col gap-3">
+            <Label htmlFor="limit">Limit</Label>
+            <Input id="limit" defaultValue={item.limit} />
+          </div>
+        </div>
+        <div className="flex flex-col gap-3">
+          <Label htmlFor="reviewer">Reviewer</Label>
+          <Select defaultValue={item.reviewer}>
+            <SelectTrigger id="reviewer" className="w-full">
+              <SelectValue placeholder="Select a reviewer" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
+              <SelectItem value="Jamik Tashpulatov">
+                Jamik Tashpulatov
+              </SelectItem>
+              <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </form>
+    </div>
+  );
+});
+
+TableCellViewer.displayName = "TableCellViewer";
 
 export function DataTable({
-  data: initialData
+  data: initialData,
+  columns: initialColumns,
+  onRowClick,
+  onRowSelectionChange,
+  onSortChange,
+  onFilterChange,
+  onPaginationChange,
+  rowCount,
+  loading,
+  error,
 }) {
+  // Memoize columns to prevent unnecessary recalculations
+  const columns = useMemo(() => initialColumns, [initialColumns]);
+
+  // Memoize data to prevent unnecessary recalculations
+  const data = useMemo(() => initialData, [initialData]);
+
   const [data, setData] = React.useState(() => initialData)
   const [rowSelection, setRowSelection] = React.useState({})
   const [columnVisibility, setColumnVisibility] =
@@ -338,147 +492,117 @@ export function DataTable({
 
   const dataIds = React.useMemo(() => data?.map(({ id }) => id) || [], [data])
 
+  // Memoize table instance
   const table = useReactTable({
     data,
     columns,
-    state: {
-      sorting,
-      columnVisibility,
-      rowSelection,
-      columnFilters,
-      pagination,
-    },
-    getRowId: (row) => row.id.toString(),
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
-  })
+    state: {
+      sorting,
+      columnFilters,
+      pagination,
+      rowSelection,
+      columnVisibility,
+    },
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
+    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: setColumnVisibility,
+    manualPagination: true,
+    pageCount: Math.ceil(rowCount / pagination.pageSize),
+  });
 
-  function handleDragEnd(event) {
-    const { active, over } = event
-    if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id)
-        const newIndex = dataIds.indexOf(over.id)
-        return arrayMove(data, oldIndex, newIndex);
-      })
+  // Memoize event handlers
+  const handleDragEnd = useCallback((event) => {
+    const { active, over } = event;
+    if (active.id !== over.id) {
+      setData((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
     }
-  }
+  }, []);
+
+  // Memoize the table body content
+  const tableBodyContent = useMemo(() => {
+    if (loading) {
+      return (
+        <TableRow>
+          <TableCell colSpan={columns.length} className="h-24 text-center">
+            <div className="flex items-center justify-center">
+              <IconLoader className="h-6 w-6 animate-spin" />
+            </div>
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (error) {
+      return (
+        <TableRow>
+          <TableCell colSpan={columns.length} className="h-24 text-center text-destructive">
+            {error}
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    if (!table.getRowModel().rows?.length) {
+      return (
+        <TableRow>
+          <TableCell colSpan={columns.length} className="h-24 text-center">
+            No results.
+          </TableCell>
+        </TableRow>
+      );
+    }
+
+    return (
+      <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
+        {table.getRowModel().rows.map((row) => (
+          <DraggableRow key={row.id} row={row} />
+        ))}
+      </SortableContext>
+    );
+  }, [loading, error, table, columns, dataIds]);
 
   return (
-    (<Tabs defaultValue="outline" className="w-full flex-col justify-start gap-6">
-      <div className="flex items-center justify-between px-4 lg:px-6">
-        <Label htmlFor="view-selector" className="sr-only">
-          View
-        </Label>
-        <Select defaultValue="outline">
-          <SelectTrigger className="flex w-fit @4xl/main:hidden" size="sm" id="view-selector">
-            <SelectValue placeholder="Select a view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="outline">Outline</SelectItem>
-            <SelectItem value="past-performance">Past Performance</SelectItem>
-            <SelectItem value="key-personnel">Key Personnel</SelectItem>
-            <SelectItem value="focus-documents">Focus Documents</SelectItem>
-          </SelectContent>
-        </Select>
-        <TabsList
-          className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
-          <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
-          </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
-        </TabsList>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <IconLayoutColumns />
-                <span className="hidden lg:inline">Customize Columns</span>
-                <span className="lg:hidden">Columns</span>
-                <IconChevronDown />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              {table
-                .getAllColumns()
-                .filter((column) =>
-                typeof column.accessorFn !== "undefined" &&
-                column.getCanHide())
-                .map((column) => {
-                  return (
-                    (<DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }>
-                      {column.id}
-                    </DropdownMenuCheckboxItem>)
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add Section</span>
-          </Button>
-        </div>
-      </div>
+    <Tabs defaultValue="outline" className="w-full">
       <TabsContent
         value="outline"
-        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6">
+        className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
+      >
         <div className="overflow-hidden rounded-lg border">
           <DndContext
             collisionDetection={closestCenter}
             modifiers={[restrictToVerticalAxis]}
             onDragEnd={handleDragEnd}
             sensors={sensors}
-            id={sortableId}>
+            id={sortableId}
+          >
             <Table>
               <TableHeader className="bg-muted sticky top-0 z-10">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        (<TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(header.column.columnDef.header, header.getContext())}
-                        </TableHead>)
-                      );
-                    })}
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </TableHead>
+                    ))}
                   </TableRow>
                 ))}
               </TableHeader>
               <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {table.getRowModel().rows?.length ? (
-                  <SortableContext items={dataIds} strategy={verticalListSortingStrategy}>
-                    {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row} />
-                    ))}
-                  </SortableContext>
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={columns.length} className="h-24 text-center">
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
+                {tableBodyContent}
               </TableBody>
             </Table>
           </DndContext>
@@ -554,16 +678,7 @@ export function DataTable({
           </div>
         </div>
       </TabsContent>
-      <TabsContent value="past-performance" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-      <TabsContent value="key-personnel" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-      <TabsContent value="focus-documents" className="flex flex-col px-4 lg:px-6">
-        <div className="aspect-video w-full flex-1 rounded-lg border border-dashed"></div>
-      </TabsContent>
-    </Tabs>)
+    </Tabs>
   );
 }
 
@@ -586,158 +701,4 @@ const chartConfig = {
     label: "Mobile",
     color: "var(--primary)",
   }
-}
-
-function TableCellViewer({
-  item
-}) {
-  const isMobile = useIsMobile()
-
-  return (
-    (<Drawer direction={isMobile ? "bottom" : "right"}>
-      <DrawerTrigger asChild>
-        <Button variant="link" className="text-foreground w-fit px-0 text-left">
-          {item.header}
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.header}</DrawerTitle>
-          <DrawerDescription>
-            Showing total visitors for the last 6 months
-          </DrawerDescription>
-        </DrawerHeader>
-        <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
-          {!isMobile && (
-            <>
-              <ChartContainer config={chartConfig}>
-                <AreaChart
-                  accessibilityLayer
-                  data={chartData}
-                  margin={{
-                    left: 0,
-                    right: 10,
-                  }}>
-                  <CartesianGrid vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    tickLine={false}
-                    axisLine={false}
-                    tickMargin={8}
-                    tickFormatter={(value) => value.slice(0, 3)}
-                    hide />
-                  <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                  <Area
-                    dataKey="mobile"
-                    type="natural"
-                    fill="var(--color-mobile)"
-                    fillOpacity={0.6}
-                    stroke="var(--color-mobile)"
-                    stackId="a" />
-                  <Area
-                    dataKey="desktop"
-                    type="natural"
-                    fill="var(--color-desktop)"
-                    fillOpacity={0.4}
-                    stroke="var(--color-desktop)"
-                    stackId="a" />
-                </AreaChart>
-              </ChartContainer>
-              <Separator />
-              <div className="grid gap-2">
-                <div className="flex gap-2 leading-none font-medium">
-                  Trending up by 5.2% this month{" "}
-                  <IconTrendingUp className="size-4" />
-                </div>
-                <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just
-                  some random text to test the layout. It spans multiple lines
-                  and should wrap around.
-                </div>
-              </div>
-              <Separator />
-            </>
-          )}
-          <form className="flex flex-col gap-4">
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.header} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
-                <Select defaultValue={item.type}>
-                  <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Table of Contents">
-                      Table of Contents
-                    </SelectItem>
-                    <SelectItem value="Executive Summary">
-                      Executive Summary
-                    </SelectItem>
-                    <SelectItem value="Technical Approach">
-                      Technical Approach
-                    </SelectItem>
-                    <SelectItem value="Design">Design</SelectItem>
-                    <SelectItem value="Capabilities">Capabilities</SelectItem>
-                    <SelectItem value="Focus Documents">
-                      Focus Documents
-                    </SelectItem>
-                    <SelectItem value="Narrative">Narrative</SelectItem>
-                    <SelectItem value="Cover Page">Cover Page</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
-                <Select defaultValue={item.status}>
-                  <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Done">Done</SelectItem>
-                    <SelectItem value="In Progress">In Progress</SelectItem>
-                    <SelectItem value="Not Started">Not Started</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <Label htmlFor="reviewer">Reviewer</Label>
-              <Select defaultValue={item.reviewer}>
-                <SelectTrigger id="reviewer" className="w-full">
-                  <SelectValue placeholder="Select a reviewer" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                  <SelectItem value="Jamik Tashpulatov">
-                    Jamik Tashpulatov
-                  </SelectItem>
-                  <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </form>
-        </div>
-        <DrawerFooter>
-          <Button>Submit</Button>
-          <DrawerClose asChild>
-            <Button variant="outline">Done</Button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>)
-  );
 }
