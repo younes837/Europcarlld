@@ -40,6 +40,7 @@ const columns = [
   },
 ];
 
+
 export default function VehiculesDisponibles() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
