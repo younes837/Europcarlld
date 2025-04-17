@@ -158,11 +158,12 @@ const Lld = () => {
                             left: 0,
                             bottom: 0,
                         }}
+                        
                     >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <Tooltip content={renderTooltipWithoutRange} />
+                        <CartesianGrid strokeDasharray="3 3" className='cursor-pointer'/>
+                        <XAxis dataKey="name" className='cursor-pointer' />
+                        <YAxis className='cursor-pointer'/>
+                        <Tooltip content={renderTooltipWithoutRange} className='cursor-pointer'/>
                         <Area
                             type="monotone"
                             dataKey="range"
@@ -171,9 +172,10 @@ const Lld = () => {
                             connectNulls
                             dot={false}
                             activeDot={false}
+                            className='cursor-pointer'
                         />
-                        <Line type="natural" dataKey="value" stroke="#15803d" connectNulls />
-                        <Legend content={renderLegendWithoutRange} />
+                        <Line type="natural" dataKey="value" stroke="#15803d" connectNulls className='cursor-pointer'/>
+                        <Legend content={renderLegendWithoutRange} className='cursor-pointer' />
                     </ComposedChart>
                 </ResponsiveContainer>
             </div>
