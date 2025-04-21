@@ -126,6 +126,22 @@ export const data = {
       ],
     },
     {
+      title: "Analyse Financière",
+      label: "Analyse Financière",
+      url: "#",
+      icon: SquareTerminal,
+      items: [
+        {
+          title: "Revenue par voiture",
+          url: "/revenue-par-voiture",
+        },
+        {
+          title: "Marge par client",
+          url: "/marge-par-client",
+        }
+      ],
+    },
+    {
       title: "Récap Client",
       label: "Ancien client",
       url: "#",
