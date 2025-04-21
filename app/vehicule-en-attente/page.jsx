@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,7 @@ import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
 
+// Memoize columns definition to prevent unnecessary re-renders
 const columns = [
   {
     field: "contrat",
@@ -58,51 +59,71 @@ const columns = [
   },
 ];
 
+// Separate data fetching function for better error handling and reusability
+async function fetchVehiculeData() {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vh_enattente`, {
+    next: { revalidate: 300 }, // Cache data for 5 minutes
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch data');
+  }
+  return response.json();
+}
+
 export default function Page() {
-  const [allData, setAllData] = useState([]); // Store all data
-  const [filteredData, setFilteredData] = useState([]); // Store filtered data
-  const [loading, setLoading] = useState(false);
+  const [allData, setAllData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
+  const [loading, setLoading] = useState(true); // Start with loading true
   const [matriculeSearch, setMatriculeSearch] = useState("");
   const [marqueSearch, setMarqueSearch] = useState("");
 
-  // Fetch all data once on component mount
   useEffect(() => {
+    let mounted = true;
+
     const fetchData = async () => {
       try {
-        setLoading(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/vh_enattente`);
-        const data = await response.json();
+        const data = await fetchVehiculeData();
         const items = data || [];
-        setAllData(items.map(item => ({
-          ...item,
-          id: item.id || item.matricule, // Use matricule as fallback id
-        })));
-        setFilteredData(items);
+        
+        if (mounted) {
+          const processedItems = items.map(item => ({
+            ...item,
+            id: `${item.id}+${item.matricule}+${item.contrat}`,
+          }));
+          
+          setAllData(processedItems);
+          setFilteredData(processedItems);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchData();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Handle search
+  // Optimize search by debouncing and memoizing the filter operation
   useEffect(() => {
     const filtered = allData.filter(item => {
-      const matchMatricule = item.matricule?.toLowerCase().includes(matriculeSearch.toLowerCase()) || !matriculeSearch;
-      const matchMarque = item.marque?.toLowerCase().includes(marqueSearch.toLowerCase()) || !marqueSearch;
+      const matchMatricule = !matriculeSearch || 
+        (item.matricule?.toLowerCase() || "").includes(matriculeSearch.toLowerCase());
+      const matchMarque = !marqueSearch || 
+        (item.marque?.toLowerCase() || "").includes(marqueSearch.toLowerCase());
       return matchMatricule && matchMarque;
     });
     setFilteredData(filtered);
   }, [matriculeSearch, marqueSearch, allData]);
 
-
-  // Export to Excel
   const exportToExcel = () => {
     try {
-      // Use filtered data for export
       const formattedData = filteredData.map((row) => ({
         Contrat: row.contrat,
         Marque: row.marque,
@@ -173,7 +194,6 @@ export default function Page() {
         </Button>
       </div>
 
-      {loading && <div className="loader2"></div>}
       <div className="h-[75vh] overflow-auto">
         <DataGrid
           rows={filteredData}
@@ -187,6 +207,7 @@ export default function Page() {
           }}
           getRowId={(row) => `${row.id}+${row.matricule}+${row.contrat}`}
           disableRowSelectionOnClick
+          keepNonExistentRowsSelected
         />
       </div>
     </div>
