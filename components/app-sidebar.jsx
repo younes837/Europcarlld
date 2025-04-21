@@ -60,7 +60,7 @@ export const data = {
           url: "/vehicules-vendus",
         },
         {
-          title: "Le VR des véhicules",
+          title: "La VR des véhicules",
           url: "/vr-vehicules",
         },
         {
