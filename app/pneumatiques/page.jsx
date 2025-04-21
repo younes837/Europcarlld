@@ -58,10 +58,11 @@ export default function PneumatiquesPage() {
   const [clientDetails, setClientDetails] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [loadingRowId, setLoadingRowId] = useState(null);
 
   // Function to handle viewing details
   const handleViewDetails = async (row) => {
-    setSelectedClient(row);
+    setLoadingRowId(row.id || row.CLIENT);
     try {
       setDetailsLoading(true);
       
@@ -84,6 +85,7 @@ export default function PneumatiquesPage() {
       setError(error.message);
     } finally {
       setDetailsLoading(false);
+      setLoadingRowId(null);
     }
   };
   
@@ -126,16 +128,24 @@ export default function PneumatiquesPage() {
       field: "actions", 
       headerName: "Action ", 
       width: 100,
-      renderCell: (params) => (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleViewDetails(params.row)}
-          className="h-8 w-8 p-0"
-        >
-          <Eye className="h-4 w-4" />
-        </Button>
-      ),
+      renderCell: (params) => {
+        const isLoading = loadingRowId === (params.row.id || params.row.CLIENT);
+        return (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleViewDetails(params.row)}
+            className="h-8 w-8 p-0"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-800 border-t-transparent"></div>
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
+          </Button>
+        );
+      },
     },
     { field: "CLIENT", headerName: "Client", width: 200 },
     { field: "number_of_vehicles", headerName: "Nombre de Véhicules", width: 160, type: "number" },
@@ -464,7 +474,13 @@ export default function PneumatiquesPage() {
       </div>
 
       {(loading || isFiltering) && <div className="loader2"></div>}
-      <div className="h-[75vh] overflow-y-auto">
+      <div 
+        className="flex-1 w-full" 
+        style={{ 
+          height: '75vh',
+          minHeight: '400px'
+        }}
+      >
         <DataGrid
           rows={rows}
           columns={columns}
@@ -486,6 +502,16 @@ export default function PneumatiquesPage() {
           className="bg-white"
           getRowClassName={(params) => {
             return params.row.id === 'totals' ? 'bg-yellow-100' : '';
+          }}
+          sx={{ 
+            height: '100%',
+            width: '100%',
+            '& .MuiDataGrid-root': {
+              border: 'none'
+            },
+            '& .MuiDataGrid-cell': {
+              borderBottom: '1px solid #f0f0f0'
+            }
           }}
         />
       </div>
@@ -536,18 +562,29 @@ export default function PneumatiquesPage() {
                       <div className="loader2"></div>
                     </div>
                   ) : (
-                    <div style={{ height: '60vh', width: '100%' }}>
+                    <div style={{ height: '60vh', minHeight: '500px', width: '100%' }}>
                       <DataGrid
                         rows={clientDetails}
                         columns={detailsColumns}
                         loading={detailsLoading}
                         pageSizeOptions={[25, 50, 100]}
-                        paginationModel={{ page: 0, pageSize: 25 }}
-                        paginationMode="client"
-                        disableRowSelectionOnClick
+                        initialState={{
+                          pagination: { paginationModel: { pageSize: 25 } },
+                        }}
+                        pagination
                         getRowId={(row) => `${row.F090KY}_${row.F091IMMA}_${row.F400NMDOC}`}
                         className="bg-white"
-                        autoHeight={false}
+                        disableRowSelectionOnClick
+                        sx={{ 
+                          height: '100%',
+                          width: '100%',
+                          '& .MuiDataGrid-root': {
+                            border: 'none'
+                          },
+                          '& .MuiDataGrid-cell': {
+                            borderBottom: '1px solid #f0f0f0'
+                          }
+                        }}
                       />
                     </div>
                   )}

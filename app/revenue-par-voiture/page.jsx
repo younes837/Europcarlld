@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import axios from "axios";
 import * as XLSX from "xlsx";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

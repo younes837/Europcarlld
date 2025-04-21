@@ -207,7 +207,8 @@ export function SectionCards() {
         </Link>
         <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
           <div className={`flex gap-2 font-medium items-center ${ trend2 === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-            Strong user retention {trend1 === "up" ? <IconTrendingUp className="size-4"/> : <IconTrendingDown className="size-4"/>}
+            {trend1 === "up" ?  `Plus que l'année précédente.` : `Moins que l'année précédente.`}
+            {trend1 === "up" ? <IconTrendingUp className="size-4"/> : <IconTrendingDown className="size-4"/>}
           </div>
           {/* <div className="text-muted-foreground text-xs">
             Engagement exceed targets

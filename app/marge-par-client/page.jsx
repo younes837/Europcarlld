@@ -3,10 +3,12 @@ import React, { useEffect, useState, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileDown, Eye, X } from "lucide-react";
+import { Search, FileDown } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Label } from "@/components/ui/label";
 import TableLoader from "@/components/Loaders/TableLoader";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const DataTable = () => {
   const [rows, setRows] = useState([]);
@@ -27,32 +29,51 @@ const DataTable = () => {
     totalRNL: 0,
     totalParcs: 0,
   });
+  const [sortModel, setSortModel] = useState([]);
+  const [filterModel, setFilterModel] = useState({
+    items: [],
+    quickFilterValues: [],
+  });
 
   const fetchData = async () => {
     try {
       setLoading(true);
       setLoading2(false);
       const { page, pageSize } = paginationModel;
-      const url = new URL("http://localhost:3001/api/marge_client");
+      const url = new URL(`${API_URL}/marge_client`);
 
-      // Ajout des paramètres de pagination et recherche
-      url.searchParams.append("page", page + 1); // +1 car DataGrid commence à 0
+      // Add pagination parameters
+      url.searchParams.append("page", page + 1);
       url.searchParams.append("limit", pageSize);
+
+      // Add search parameter if exists
       if (clientSearch) {
         url.searchParams.append("search", clientSearch);
+      }
+
+      // Add sorting parameters
+      if (sortModel.length > 0) {
+        url.searchParams.append("sortField", sortModel[0].field);
+        url.searchParams.append("sortOrder", sortModel[0].sort);
+      }
+
+      // Add filter parameters
+      if (filterModel.items.length > 0) {
+        const validFilters = filterModel.items.filter(
+          (item) => item.value !== undefined && item.value !== null && item.value !== ''
+        );
+        if (validFilters.length > 0) {
+          url.searchParams.append("filters", JSON.stringify(validFilters));
+        }
       }
 
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Received non-JSON response");
-      }
       const data = await response.json();
 
-      // Récupération des totaux depuis le backend si disponibles
+      // Update totals
       if (data.totals) {
         setTotals({
           totalLoyer: data.totals.totalLoyer || 0,
@@ -62,17 +83,24 @@ const DataTable = () => {
         });
       }
 
-      // Ajout d'une ligne de totaux
+      // Create totals row that will always stay at top
       const totalsRow = {
         id: "totals",
         "Nom client": `Total Clients: ${data.total || 0}`,
         Parc: data.totals?.totalParcs || 0,
         LOYER: data.totals?.totalLoyer || 0,
         MARGE: data.totals?.totalMarge || 0,
-        RNL: (data.totals?.totalRNL / data.total).toFixed(2) || 0,
+        RNL: data.totals?.totalRNL / (data.total || 1),
       };
 
-      setRows([totalsRow, ...data.data]);
+      // Add unique IDs to data rows if they don't have them
+      const dataWithIds = data.data.map((row, index) => ({
+        ...row,
+        id: row.id || `row-${index}`,
+      }));
+
+      // Always keep totals row at the top regardless of sorting
+      setRows([totalsRow, ...dataWithIds]);
       setRowCount(data.total);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -84,9 +112,9 @@ const DataTable = () => {
 
   useEffect(() => {
     fetchData();
-  }, [paginationModel, clientSearch]);
+  }, [paginationModel, clientSearch, sortModel, filterModel]);
 
-  // Mise en place du debounce pour la recherche
+  // Debounced search
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
       setClientSearch(searchInput);
@@ -103,13 +131,11 @@ const DataTable = () => {
   const exportToExcel = async () => {
     try {
       setExportLoading(true);
-
-      // Récupérer toutes les données pour l'export
-      const url = new URL("http://localhost:3001/api/marge_client");
+      const url = new URL(`${API_URL}/marge_client`);
+      url.searchParams.append("export", "true");
       if (clientSearch) {
         url.searchParams.append("search", clientSearch);
       }
-      url.searchParams.append("export", "true");
 
       const response = await fetch(url);
       if (!response.ok) {
@@ -117,19 +143,18 @@ const DataTable = () => {
       }
 
       const data = await response.json();
-
       if (data.data.length === 0) {
         console.warn("No data to export");
         return;
       }
 
-      // Ajouter la ligne des totaux pour l'export
+      // Add totals row for export
       const totalsRow = {
         "Nom client": `Total Clients: ${data.data.length}`,
         Parc: data.totals?.totalParcs || 0,
         LOYER: data.totals?.totalLoyer || 0,
         MARGE: data.totals?.totalMarge || 0,
-        RNL: data.totals?.totalRNL / data.data.length || 0,
+        RNL: (data.totals?.totalRNL / data.data.length) || 0,
       };
 
       const ws = XLSX.utils.json_to_sheet([totalsRow, ...data.data]);
@@ -147,6 +172,44 @@ const DataTable = () => {
       setExportLoading(false);
     }
   };
+
+  const columns = [
+    { 
+      field: "Nom client", 
+      headerName: "Nom Client", 
+      width: 300,
+      filterable: true,
+    },
+    { 
+      field: "Parc", 
+      headerName: "Parc", 
+      width: 200,
+      filterable: true,
+      type: 'number',
+    },
+    {
+      field: "LOYER",
+      headerName: "LOYER",
+      width: 200,
+      type: "number",
+      filterable: true,
+    },
+    {
+      field: "MARGE",
+      headerName: "MARGE",
+      width: 200,
+      type: "number",
+      filterable: true,
+    },
+    {
+      field: "RNL",
+      headerName: "RNL %",
+      width: 200,
+      type: "number",
+      filterable: true,
+      
+    },
+  ];
 
   return (
     <div className="px-4">
@@ -194,43 +257,47 @@ const DataTable = () => {
         <div className="h-[75vh] overflow-y-auto">
           <DataGrid
             rows={rows}
-            columns={[
-              { field: "Nom client", headerName: "Nom Client", width: 300 },
-              { field: "Parc", headerName: "Parc", width: 200 },
-              {
-                field: "LOYER",
-                headerName: "LOYER",
-                width: 200,
-                type: "number",
-              },
-              {
-                field: "MARGE",
-                headerName: "MARGE",
-                width: 200,
-                type: "number",
-              },
-              {
-                field: "RNL",
-                headerName: "RNL %",
-                width: 200,
-                type: "number",
-                valueFormatter: (params) => {
-                  if (params == null) return "";
-                  return `${params} %`;
-                },
-              },
-            ]}
+            columns={columns}
             loading={loading}
             pageSizeOptions={[25, 50, 100]}
             paginationModel={paginationModel}
             paginationMode="server"
             onPaginationModelChange={setPaginationModel}
             rowCount={rowCount}
+            sortingMode="server"
+            sortModel={sortModel}
+            onSortModelChange={(model) => {
+              if (model.length > 0 && model[0].field === "totals") return;
+              setSortModel(model);
+            }}
+            filterMode="server"
+            filterModel={filterModel}
+            onFilterModelChange={(newFilterModel) => {
+              // Don't allow filtering on totals row
+              const validFilters = newFilterModel.items.filter(
+                item => item.field !== "totals"
+              );
+              setFilterModel({
+                ...newFilterModel,
+                items: validFilters
+              });
+              // Reset to first page when filter changes
+              setPaginationModel(prev => ({ ...prev, page: 0 }));
+            }}
             getRowId={(row) => row.id || row["Nom client"]}
             disableRowSelectionOnClick
             className="bg-white"
             getRowClassName={(params) => {
               return params.row.id === "totals" ? "bg-indigo-100" : "";
+            }}
+            sortingOrder={["asc", "desc"]}
+            disableColumnMenu={false}
+            componentsProps={{
+              row: {
+                style: (params) => ({
+                  backgroundColor: params.row.id === "totals" ? "#EEF2FF" : "inherit",
+                }),
+              },
             }}
           />
         </div>

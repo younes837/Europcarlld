@@ -30,7 +30,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Car, FolderClosed, SquareTerminal, Wrench } from "lucide-react";
+import { Car, FolderClosed, SquareTerminal, Wrench,  ChartNoAxesCombined} from "lucide-react";
 import Link from "next/link";
 
 export const data = {
@@ -129,7 +129,7 @@ export const data = {
       title: "Analyse Financière",
       label: "Analyse Financière",
       url: "#",
-      icon: SquareTerminal,
+      icon: ChartNoAxesCombined ,
       items: [
         {
           title: "Revenue par voiture",
