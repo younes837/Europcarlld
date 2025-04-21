@@ -406,7 +406,7 @@ export default function Page() {
       )}
 
       {loading && <div className="loader2"></div>}
-      <div className="h-[75vh] overflow-auto">
+      <div className="h-[75vh] w-full" style={{ minHeight: "500px" }}>
         <DataGrid
           rows={rows}
           columns={columns}
@@ -424,6 +424,13 @@ export default function Page() {
           onFilterModelChange={setFilterModel}
           getRowId={(row) => row.Unite || `row-${Math.random()}`}
           disableRowSelectionOnClick
+          sx={{ 
+            height: '100%',
+            width: '100%',
+            '& .MuiDataGrid-main': { 
+              // Add any additional styling here
+            }
+          }}
         />
       </div>
     </div>
