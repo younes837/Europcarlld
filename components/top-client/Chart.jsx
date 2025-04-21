@@ -48,7 +48,7 @@ function Chart ({ data }){
     },
   };
 
-  return <Bar data={chartData} options={options} />;
+  return <Bar data={chartData} options={options} className='cursor-pointer'/>;
 };
 
 export default Chart;

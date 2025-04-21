@@ -70,7 +70,7 @@ function TopClient() {
           <h1 className="font-bold text-xl">Top 20 Clients par Parc</h1>
         </div>
         <div className="h-[330px] w-full ">
-          <Chart data={data} />
+          <Chart data={data}  />
         </div>
       </div>
     </div>

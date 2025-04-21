@@ -115,7 +115,7 @@ export function ChartAreaInteractive() {
         </CardDescription>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <div style={{ width: '100%', height: 300 }}>
+        <div style={{ width: '100%', height: 300 }} >
           <ResponsiveContainer>
             <LineChart
               data={filteredData}
@@ -127,22 +127,24 @@ export function ChartAreaInteractive() {
               }}
             >
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" height={60} tick={<CustomizedAxisTick />} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
+              <XAxis dataKey="name" height={60} tick={<CustomizedAxisTick className='cursor-pointer'/>} className='cursor-pointer'/>
+              <YAxis className='cursor-pointer'/>
+              <Tooltip className='cursor-pointer'/>
+              <Legend className='cursor-pointer'/>
               <Line 
                 type="monotone" 
                 dataKey="productions" 
                 stroke="#22c55e" 
                 strokeWidth={2}
-                label={<CustomizedLabel />} 
+                label={<CustomizedLabel className='cursor-pointer'/>} 
+                className='cursor-pointer'
               />
               <Line 
                 type="monotone" 
                 dataKey="restitutions" 
                 stroke="#f43f5e" 
                 strokeWidth={2}
+                className='cursor-pointer'
               />
             </LineChart>
           </ResponsiveContainer>
