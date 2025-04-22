@@ -131,19 +131,19 @@ export default function PneumatiquesPage() {
       renderCell: (params) => {
         const isLoading = loadingRowId === (params.row.id || params.row.CLIENT);
         return (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => handleViewDetails(params.row)}
-            className="h-8 w-8 p-0"
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => handleViewDetails(params.row)}
+          className="h-8 w-8 p-0"
             disabled={isLoading}
-          >
+        >
             {isLoading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-800 border-t-transparent"></div>
             ) : (
-              <Eye className="h-4 w-4" />
+          <Eye className="h-4 w-4" />
             )}
-          </Button>
+        </Button>
         );
       },
     },
