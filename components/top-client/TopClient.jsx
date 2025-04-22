@@ -1,42 +1,42 @@
-"use client"
+"use client";
 /* eslint-disable react/prop-types */
 
 import Chart from "./Chart";
 import { useEffect, useState } from "react";
 import Loader from "./Loader";
 
+function TopClient({ isLoadingFn }) {
+  const [data, setData] = useState([]);
+  const [totalClient, setTotalClient] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-function TopClient() {
-  const [data,setData] = useState([])
-  const [totalClient,setTotalClient]=useState([]);
-  const [isLoading,setIsLoading] = useState(true);
-
-  useEffect(()=>{
-    const fetchClient= async () => {
-      try{
-        setIsLoading(true)
-        const res= await fetch('http://localhost:3001/api/cal_grille_offre_original')
-        const data= await res.json()
-        setTotalClient(data.length)
-        setData(data)
-      }catch(error){
+  useEffect(() => {
+    const fetchClient = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          "http://localhost:3001/api/cal_grille_offre_original"
+        );
+        const data = await res.json();
+        setTotalClient(data.length);
+        setData(data);
+      } catch (error) {
         console.error("Error fetching data:", error);
-      }finally {
+      } finally {
         setIsLoading(false);
       }
-    }
-    fetchClient()
-  },[])
+    };
+    fetchClient();
+  }, []);
 
-  if (isLoading) {
-    return <Loader/>
+  if (isLoading && isLoadingFn) {
+    return <Loader />;
   }
 
-  
   return (
     <div className="">
-    <div className="bg-white rounded-lg shadow mb-4">
-      {/* <div className="px-4 py-3 flex flex-row items-center justify-between border-b">
+      <div className="bg-white rounded-lg shadow mb-4">
+        {/* <div className="px-4 py-3 flex flex-row items-center justify-between border-b">
         
         <div className="relative">
           <button
@@ -64,18 +64,17 @@ function TopClient() {
           </div>
         </div>
       </div> */}
-  
-      <div className="p-6 ">
-        <div className="w-full flex justify-center items-center">
-          <h1 className="font-bold text-xl">Top 20 Clients par Parc</h1>
-        </div>
-        <div className="h-[330px] w-full ">
-          <Chart data={data}  />
+
+        <div className="p-6 ">
+          <div className="w-full flex justify-center items-center">
+            <h1 className="font-bold text-xl">Top 20 Clients par Parc</h1>
+          </div>
+          <div className="h-[330px] w-full ">
+            <Chart data={data} />
+          </div>
         </div>
       </div>
     </div>
-  </div>
-  
   );
 }
 

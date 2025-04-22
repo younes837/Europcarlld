@@ -20,7 +20,7 @@ const ClientDataTable = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [error, setError] = useState(null);
   const [nomClient, setNomClient] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [startDate, setStartDate] = useState("2025-01-01");
   const [endDate, setEndDate] = useState("");
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
@@ -146,7 +146,9 @@ const ClientDataTable = () => {
                       minimumFractionDigits: 2,
                     })}
                   </div>
-                  <div className="text-sm font-medium text-muted-foreground">DH</div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    DH
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -189,7 +191,9 @@ const ClientDataTable = () => {
                       minimumFractionDigits: 2,
                     })}
                   </div>
-                  <div className="text-sm font-medium text-muted-foreground">DH</div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    DH
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -265,7 +269,7 @@ const ClientDataTable = () => {
               />
             </div>
           </div>
-          
+
           <Button
             onClick={exportToExcel}
             className="flex items-center gap-2"

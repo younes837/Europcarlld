@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Car, FolderClosed, SquareTerminal, Wrench } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export const data = {
   user: {
@@ -50,6 +51,10 @@ export const data = {
         {
           title: "Contrat actuel",
           url: "/contrat-actuel",
+        },
+        {
+          title: "LLD VR",
+          url: "/lld-vr",
         },
         {
           title: "Parc par client",
@@ -138,7 +143,7 @@ export const data = {
         {
           title: "Marge par client",
           url: "/marge-par-client",
-        }
+        },
       ],
     },
     {
@@ -166,17 +171,25 @@ export const data = {
 
 export function AppSidebar({ ...props }) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar className={"bg-green-500"} collapsible="icon" {...props}>
       <SidebarHeader>
         <SidebarMenu>
+          <div className="flex items-center gap-2 mb-5 mx-auto">
+            <Image
+              src="/adv_europcar_big.png"
+              alt="logo"
+              width={160}
+              height={70}
+            />
+          </div>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <Link href="/">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <IconDashboard className="!size-5" />
+                <span className="text-base font-semibold">Tableau de Bord</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -187,9 +200,7 @@ export function AppSidebar({ ...props }) {
         {/* <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
+      <SidebarFooter>{/* <NavUser user={data.user} /> */}</SidebarFooter>
     </Sidebar>
   );
 }

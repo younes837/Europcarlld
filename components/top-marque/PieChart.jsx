@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import * as echarts from "echarts";
 import SkeletonCard from "./Loader";
 import { Skeleton } from "../ui/skeleton";
 
-function PieChart() {
+function PieChart({ isLoadingFn }) {
   const [topClients, setTopClients] = useState([]);
-  const [isLoading,setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTopClients = async () => {
@@ -21,8 +21,8 @@ function PieChart() {
         setTopClients(sortedData);
       } catch (error) {
         console.error("Error fetching data:", error);
-      }finally{
-        setIsLoading(false)
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -31,17 +31,17 @@ function PieChart() {
 
   useEffect(() => {
     if (!topClients.length) return; // Pas de données → pas de graphique
-  
+
     const chartDom = document.getElementById("myPieChart");
     if (!chartDom) return; // Le div n'existe pas encore
-  
+
     const myChart = echarts.init(chartDom);
-  
+
     const chartData = topClients.map((client) => ({
       value: client.Nombre_Contrats,
       name: client["Marque"],
     }));
-  
+
     const option = {
       title: {
         text: "Top 10 Marque par contrat",
@@ -57,16 +57,16 @@ function PieChart() {
           radius: "50%",
           data: chartData,
           color: [
-            '#15803d', 
-            '#16a34a',
-            '#22c55e',
-            '#4ade80',
-            '#059669',
-            '#10b981',
-            '#34d399',
-            '#84cc16',
-            '#a3e635',
-            '#65a30d', 
+            "#15803d",
+            "#16a34a",
+            "#22c55e",
+            "#4ade80",
+            "#059669",
+            "#10b981",
+            "#34d399",
+            "#84cc16",
+            "#a3e635",
+            "#65a30d",
           ],
           emphasis: {
             itemStyle: {
@@ -78,33 +78,31 @@ function PieChart() {
         },
       ],
     };
-  
+
     myChart.setOption(option);
-  
+
     return () => {
       myChart.dispose();
     };
   }, [topClients]);
-  
-  if (isLoading) {
-    return <SkeletonCard/>
+
+  if (isLoading && isLoadingFn) {
+    return <SkeletonCard />;
   }
 
   return (
-<div className="">
-  <div className="bg-white rounded-lg shadow mb-4 h-[400px]">
-
-    <div className="p-4" style={{ height: "410px" }}>
-      <div className="pt-4 pb-2">
-        <div
-          id="myPieChart"
-          style={{ height: "400px", width: "100%" }}
-        ></div>
+    <div className="">
+      <div className="bg-white rounded-lg shadow mb-4 h-[400px]">
+        <div className="p-4" style={{ height: "410px" }}>
+          <div className="pt-4 pb-2">
+            <div
+              id="myPieChart"
+              style={{ height: "400px", width: "100%" }}
+            ></div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
-
   );
 }
 

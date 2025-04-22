@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import SectionCardsLoader from "./Loader";
 import Link from "next/link";
 
-export function SectionCards() {
+export function SectionCards({ isLoading }) {
   const [totalContracts, setTotalContracts] = useState(0);
   const [parcParClient, setParcParClient] = useState(0);
   const [vehiculeVendu, setVehiculeVendu] = useState(0);
@@ -23,15 +23,15 @@ export function SectionCards() {
   const [trend2, setTrend2] = useState(null);
   const [loading, setLoading] = useState(true); // State for loading
   const [pourcentageSinistre, setPourcentageSinistre] = useState(0);
-  const [pourcentageVO,setPourcentageVO] = useState(0)
+  const [pourcentageVO, setPourcentageVO] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Using Promise.all to fetch all data simultaneously
-        const [res1, res2, res3,  res4, res5, res6] = await Promise.all([
+        const [res1, res2, res3, res4, res5, res6] = await Promise.all([
           fetch("http://localhost:3001/api/contrat-daba"),
-          fetch("http://localhost:3001/api/totalclient"), 
+          fetch("http://localhost:3001/api/totalclient"),
           fetch("http://localhost:3001/api/total_vo_ly"),
           fetch("http://localhost:3001/api/total_vo"),
           fetch("http://localhost:3001/api/TOTAL_SINISTRE"),
@@ -50,17 +50,19 @@ export function SectionCards() {
 
         // Setting the state with fetched data
         setTotalContracts(data1[0].totalContrat);
-        setParcParClient((data1[0].totalContrat / data2[0].totaleClient).toFixed(0));
-        setVehiculeVenduLY(data3[0].totalLastYear)
+        setParcParClient(
+          (data1[0].totalContrat / data2[0].totaleClient).toFixed(0)
+        );
+        setVehiculeVenduLY(data3[0].totalLastYear);
         setVehiculeVendu(data4[0].TotalCount);
         setTotalSinistre(data5[0].TOTAL);
         setTotalSinistreX(data6[0].TOTAL);
 
-        let ps1 = ((data4[0].TotalCount * 100) / data3[0].totalLastYear) - 100 ;
-        console.log(ps1 + '%')
+        let ps1 = (data4[0].TotalCount * 100) / data3[0].totalLastYear - 100;
+        console.log(ps1 + "%");
         setPourcentageVO(ps1);
 
-        let ps2 = ((data5[0].TOTAL * 100) / data6[0].TOTAL) - 100;
+        let ps2 = (data5[0].TOTAL * 100) / data6[0].TOTAL - 100;
         setPourcentageSinistre(ps2.toFixed(2));
 
         // Calculate trend1 based on the data
@@ -72,7 +74,7 @@ export function SectionCards() {
         } else {
           setTrend1("equal");
         }
-        
+
         // Calculate trend2 based on the data
         if (ps2 > 0) {
           setTrend2("up");
@@ -81,8 +83,6 @@ export function SectionCards() {
         } else {
           setTrend2("equal");
         }
-
-
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -93,7 +93,7 @@ export function SectionCards() {
     fetchData();
   }, []); // Empty array to ensure fetchData runs only once on mount
 
-  if (loading) {
+  if (loading && isLoading) {
     return <SectionCardsLoader />; // Show a loading indicator while data is being fetched
   }
 
@@ -118,60 +118,59 @@ export function SectionCards() {
 
   return (
     <div className="grid grid-cols-1 gap-6 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      
       <Card className="@container/card transition-shadow hover:shadow-md rounded-2xl border border-border/50 bg-gradient-to-br from-card to-muted/10 backdrop-blur-sm">
-      <Link href='/contrat-actuel'>
-        <CardHeader className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
-              Total Contracts
-            </CardTitle>
-            <CardTitle className="text-3xl font-bold tabular-nums text-foreground @[250px]/card:text-4xl">
-              {totalContracts}
-            </CardTitle>
-          </div>
-          <CardAction>
-            <Badge
-              variant="outline"
-              className="flex items-center gap-1 px-2 py-1 text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20"
-            >
-              <IconTrendingUp className="size-4 animate-pulse" />
-              <span>0</span>
-            </Badge>
-          </CardAction>
-        </CardHeader>
-      </Link>
+        <Link href="/contrat-actuel">
+          <CardHeader className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
+                Total Contracts
+              </CardTitle>
+              <CardTitle className="text-3xl font-bold tabular-nums text-foreground @[250px]/card:text-4xl">
+                {totalContracts}
+              </CardTitle>
+            </div>
+            <CardAction>
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1 px-2 py-1 text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20"
+              >
+                <IconTrendingUp className="size-4 animate-pulse" />
+                <span>0</span>
+              </Badge>
+            </CardAction>
+          </CardHeader>
+        </Link>
         <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
           <div className="flex gap-2 font-medium items-center text-green-600 dark:text-green-400">
-          Actifs en ce moment 
+            Actifs en ce moment
           </div>
           {/* <div className="text-muted-foreground text-xs">
             Visitors for the last 6 months
           </div> */}
         </CardFooter>
       </Card>
-    
+
       <Card className="@container/card transition-shadow hover:shadow-md rounded-2xl border border-border/50 bg-gradient-to-br from-card to-muted/10 backdrop-blur-sm">
-        <Link href='/parc-par-client' >
-        <CardHeader className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
-              Parc moyen Par Client
-            </CardTitle>
-            <CardTitle className="text-3xl font-bold tabular-nums text-foreground @[250px]/card:text-4xl">
-              {parcParClient}
-            </CardTitle>
-          </div>
-          <CardAction>
-            <Badge
-              variant="outline"
-              className="flex items-center gap-1 px-2 py-1 text-red-600 border-red-300 bg-red-50 dark:bg-red-900/20"
+        <Link href="/parc-par-client">
+          <CardHeader className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
+                Parc moyen Par Client
+              </CardTitle>
+              <CardTitle className="text-3xl font-bold tabular-nums text-foreground @[250px]/card:text-4xl">
+                {parcParClient}
+              </CardTitle>
+            </div>
+            <CardAction>
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1 px-2 py-1 text-red-600 border-red-300 bg-red-50 dark:bg-red-900/20"
               >
-              <IconTrendingDown className="size-4 animate-pulse" />
-              <span>-20%</span>
-            </Badge>
-          </CardAction>
-        </CardHeader>
+                <IconTrendingDown className="size-4 animate-pulse" />
+                <span>-20%</span>
+              </Badge>
+            </CardAction>
+          </CardHeader>
         </Link>
         <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
           <div className="flex gap-2 font-medium items-center text-red-600 dark:text-red-400">
@@ -184,7 +183,7 @@ export function SectionCards() {
       </Card>
 
       <Card className="@container/card transition-shadow hover:shadow-md rounded-2xl border border-border/50 bg-gradient-to-br from-card to-muted/10 backdrop-blur-sm">
-        <Link href='/vehicules-vendus'>
+        <Link href="/vehicules-vendus">
           <CardHeader className="flex justify-between items-start">
             <div>
               <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
@@ -198,7 +197,7 @@ export function SectionCards() {
               <Badge
                 variant="outline"
                 className={`flex items-center gap-1 px-2 py-1 ${trend1_Style()}`}
-                >
+              >
                 {trend1 === "up" ? <IconTrendingUp /> : <IconTrendingDown />}
                 <span>{pourcentageVO.toFixed(2)}%</span>
               </Badge>
@@ -206,8 +205,17 @@ export function SectionCards() {
           </CardHeader>
         </Link>
         <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
-          <div className={`flex gap-2 font-medium items-center ${ trend2 === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-            Strong user retention {trend1 === "up" ? <IconTrendingUp className="size-4"/> : <IconTrendingDown className="size-4"/>}
+          <div
+            className={`flex gap-2 font-medium items-center ${
+              trend2 === "up" ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            Strong user retention{" "}
+            {trend1 === "up" ? (
+              <IconTrendingUp className="size-4" />
+            ) : (
+              <IconTrendingDown className="size-4" />
+            )}
           </div>
           {/* <div className="text-muted-foreground text-xs">
             Engagement exceed targets
@@ -216,7 +224,7 @@ export function SectionCards() {
       </Card>
 
       <Card className="@container/card transition-shadow hover:shadow-md rounded-2xl border border-border/50 bg-gradient-to-br from-card to-muted/10 backdrop-blur-sm">
-        <Link href='/sinistres'>
+        <Link href="/sinistres">
           <CardHeader className="flex justify-between items-start">
             <div>
               <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
@@ -238,11 +246,19 @@ export function SectionCards() {
           </CardHeader>
         </Link>
         <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
-          <div className={`flex gap-2 font-medium items-center ${ trend2 === 'up' ? 'text-red-600' : 'text-green-600'} bg-none`}>
+          <div
+            className={`flex gap-2 font-medium items-center ${
+              trend2 === "up" ? "text-red-600" : "text-green-600"
+            } bg-none`}
+          >
             {trend2 === "up"
               ? "Le nombre de sinistres a augmenté"
               : "Le nombre de sinistres a diminué"}
-            {trend2 === "up" ? <IconTrendingUp className="size-4"/> : <IconTrendingDown className="size-4"/>}
+            {trend2 === "up" ? (
+              <IconTrendingUp className="size-4" />
+            ) : (
+              <IconTrendingDown className="size-4" />
+            )}
           </div>
           {/* <div className="text-muted-foreground text-xs">
             Meets growth projections

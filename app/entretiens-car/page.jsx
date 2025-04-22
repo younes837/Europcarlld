@@ -29,7 +29,7 @@ export default function EntretienMatricule() {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [matricule, setMatricule] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [startDate, setStartDate] = useState("2025-01-01");
   const [endDate, setEndDate] = useState("");
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(true);
@@ -84,7 +84,12 @@ export default function EntretienMatricule() {
   // Recherche automatique lorsque les valeurs debounced changent
   useEffect(() => {
     fetchData();
-  }, [debouncedMatricule, debouncedStartDate, debouncedEndDate, paginationModel]);
+  }, [
+    debouncedMatricule,
+    debouncedStartDate,
+    debouncedEndDate,
+    paginationModel,
+  ]);
 
   // Chargement initial des données
   useEffect(() => {
@@ -142,13 +147,13 @@ export default function EntretienMatricule() {
       });
 
       if (debouncedMatricule.trim()) {
-        params.append('matricule', debouncedMatricule);
+        params.append("matricule", debouncedMatricule);
       }
       if (debouncedStartDate.trim()) {
-        params.append('dateDebut', debouncedStartDate);
+        params.append("dateDebut", debouncedStartDate);
       }
       if (debouncedEndDate.trim()) {
-        params.append('dateFin', debouncedEndDate);
+        params.append("dateFin", debouncedEndDate);
       }
 
       const response = await fetch(
@@ -180,7 +185,12 @@ export default function EntretienMatricule() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedMatricule, debouncedStartDate, debouncedEndDate, paginationModel]);
+  }, [
+    debouncedMatricule,
+    debouncedStartDate,
+    debouncedEndDate,
+    paginationModel,
+  ]);
 
   // Optimisation du filtrage des dates avec useMemo
   const filteredDataMemo = useMemo(() => {
@@ -188,7 +198,7 @@ export default function EntretienMatricule() {
 
     // Filtrer par matricule si rempli
     if (matricule.trim()) {
-      filtered = filtered.filter(row => 
+      filtered = filtered.filter((row) =>
         row.F091IMMA.toLowerCase().includes(matricule.toLowerCase())
       );
     }
@@ -203,7 +213,7 @@ export default function EntretienMatricule() {
         return data;
       }
 
-      filtered = filtered.filter(row => {
+      filtered = filtered.filter((row) => {
         const date = new Date(row.F400FACDT);
         return date >= start && date <= end;
       });
@@ -252,148 +262,152 @@ export default function EntretienMatricule() {
         </h2>
       </div>
 
-      {loading2 ? <CardsLoader/> :
-      <div className="grid grid-cols-4 gap-6 mb-8">
-        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
-          <CardContent className="p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
-                  Total Montant HT
+      {loading2 ? (
+        <CardsLoader />
+      ) : (
+        <div className="grid grid-cols-4 gap-6 mb-8">
+          <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                    Total Montant HT
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-green-600" />
+                  </div>
                 </div>
-                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-green-600" />
+                <div className="flex items-baseline gap-1">
+                  <div className="text-2xl font-bold tracking-tight">
+                    {summary.totalMontant.toLocaleString("fr-FR", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    DH
+                  </div>
                 </div>
               </div>
-              <div className="flex items-baseline gap-1">
-                <div className="text-2xl font-bold tracking-tight">
-                  {summary.totalMontant.toLocaleString("fr-FR", {
-                    minimumFractionDigits: 2,
-                  })}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                    Nombre D'entretiens
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                    <Wrench className="h-6 w-6 text-yellow-600" />
+                  </div>
                 </div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  DH
+                <div className="flex items-baseline gap-1">
+                  <div className="text-2xl font-bold tracking-tight">
+                    {summary.totalEntretiens.toLocaleString("fr-FR")}
+                  </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                    Montant Moyen
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <div className="text-2xl font-bold tracking-tight">
+                    {summary.montantMoyen.toLocaleString("fr-FR", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    DH
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+            <CardContent className="p-6">
+              <div className="flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                    Véhicules Uniques
+                  </div>
+                  <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <Car className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-1">
+                  <div className="text-2xl font-bold tracking-tight">
+                    {summary.uniqueVehiclesCount.toLocaleString("fr-FR")}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {loading2 ? (
+        <InputsLoader />
+      ) : (
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex gap-4 items-center">
+            <div className="w-full sm:w-64">
+              <Label htmlFor="search">Matricule</Label>
+              <div className="relative mt-1">
+                <Search className="absolute top-2.5 left-2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  value={matricule}
+                  onChange={(e) => setMatricule(e.target.value)}
+                  placeholder="Ex: 1234-ABC"
+                  className="pl-8"
+                />
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
-          <CardContent className="p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
-                  Nombre D'entretiens
-                </div>
-                <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                  <Wrench className="h-6 w-6 text-yellow-600" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <div className="text-2xl font-bold tracking-tight">
-                  {summary.totalEntretiens.toLocaleString("fr-FR")}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
-          <CardContent className="p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
-                  Montant Moyen
-                </div>
-                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <DollarSign className="h-6 w-6 text-green-600" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <div className="text-2xl font-bold tracking-tight">
-                  {summary.montantMoyen.toLocaleString("fr-FR", {
-                    minimumFractionDigits: 2,
-                  })}
-                </div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  DH
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
-          <CardContent className="p-6">
-            <div className="flex flex-col">
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
-                  Véhicules Uniques
-                </div>
-                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Car className="h-6 w-6 text-blue-600" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <div className="text-2xl font-bold tracking-tight">
-                  {summary.uniqueVehiclesCount.toLocaleString("fr-FR")}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-      }
-
-      {loading2 ? <InputsLoader/> :
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-4 items-center">
-          <div className="w-full sm:w-64">
-            <Label htmlFor="search">Matricule</Label>
-            <div className="relative mt-1">
-              <Search className="absolute top-2.5 left-2 w-4 h-4 text-muted-foreground" />
+            <div className="w-full sm:w-64">
+              <Label htmlFor="date-start">Date début</Label>
               <Input
-                id="search"
-                value={matricule}
-                onChange={(e) => setMatricule(e.target.value)}
-                placeholder="Ex: 1234-ABC"
-                className="pl-8"
+                id="date-start"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+
+            <div className="w-full sm:w-64">
+              <Label htmlFor="date-end">Date fin</Label>
+              <Input
+                id="date-end"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
               />
             </div>
           </div>
-        
-          <div className="w-full sm:w-64">
-            <Label htmlFor="date-start">Date début</Label>
-            <Input
-              id="date-start"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-          </div>
-        
-          <div className="w-full sm:w-64">
-            <Label htmlFor="date-end">Date fin</Label>
-            <Input
-              id="date-end"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-          </div>
-        </div>
 
-        <Button
-          onClick={handleExport}
-          className="flex items-center gap-2"
-          disabled={exporting || filteredData.length === 0}
-        >
-          <FileDown className="w-4 h-4" />
-          {exporting ? "Exportation..." : "Exporter vers Excel"}
-        </Button>
-      </div>
-      }
+          <Button
+            onClick={handleExport}
+            className="flex items-center gap-2"
+            disabled={exporting || filteredData.length === 0}
+          >
+            <FileDown className="w-4 h-4" />
+            {exporting ? "Exportation..." : "Exporter vers Excel"}
+          </Button>
+        </div>
+      )}
 
       {error && (
         <div className="mb-4 p-4 text-red-500 bg-red-50 border border-red-200 rounded">
@@ -401,21 +415,23 @@ export default function EntretienMatricule() {
         </div>
       )}
 
-      {loading2 ? <TableLoader/> :
-      <div className="h-[75vh]">
-        <DataGrid
-          rows={filteredData}
-          columns={columns}
-          pageSizeOptions={[10, 20, 50]}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          paginationMode="server"
-          rowCount={totalRows}
-          loading={loading}
-          className="bg-white"
-        />
-      </div>
-      }
+      {loading2 ? (
+        <TableLoader />
+      ) : (
+        <div className="h-[75vh]">
+          <DataGrid
+            rows={filteredData}
+            columns={columns}
+            pageSizeOptions={[10, 20, 50]}
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            paginationMode="server"
+            rowCount={totalRows}
+            loading={loading}
+            className="bg-white"
+          />
+        </div>
+      )}
     </div>
   );
 }
