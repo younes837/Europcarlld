@@ -207,7 +207,6 @@ const DataTable = () => {
       width: 200,
       type: "number",
       filterable: true,
-      
     },
   ];
 
