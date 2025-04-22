@@ -10,38 +10,33 @@ function TopClient({ isLoadingFn }) {
   const [totalClient, setTotalClient] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  function TopClient() {
-    const [data, setData] = useState([]);
-    const [totalClient, setTotalClient] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    const fetchClient = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/cal_grille_offre_original`
+        );
+        const data = await res.json();
+        setTotalClient(data.length);
+        setData(data);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClient();
+  }, []);
 
-    useEffect(() => {
-      const fetchClient = async () => {
-        try {
-          setIsLoading(true);
-          const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/cal_grille_offre_original`
-          );
-          const data = await res.json();
-          setTotalClient(data.length);
-          setData(data);
-        } catch (error) {
-          console.error("Error fetching data:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchClient();
-    }, []);
+  if (isLoading && isLoadingFn) {
+    return <Loader />;
+  }
 
-    if (isLoading && isLoadingFn) {
-      return <Loader />;
-    }
-
-    return (
-      <div className="">
-        <div className="bg-white rounded-lg shadow mb-4">
-          {/* <div className="px-4 py-3 flex flex-row items-center justify-between border-b">
+  return (
+    <div className="">
+      <div className="bg-white rounded-lg shadow mb-4">
+        {/* <div className="px-4 py-3 flex flex-row items-center justify-between border-b">
         
         <div className="relative">
           <button
@@ -70,17 +65,17 @@ function TopClient({ isLoadingFn }) {
         </div>
       </div> */}
 
-          <div className="p-6 ">
-            <div className="w-full flex justify-center items-center">
-              <h1 className="font-bold text-xl">Top 20 Clients par Parc</h1>
-            </div>
-            <div className="h-[330px] w-full ">
-              <Chart data={data} />
-            </div>
+        <div className="p-6 ">
+          <div className="w-full flex justify-center items-center">
+            <h1 className="font-bold text-xl">Top 20 Clients par Parc</h1>
+          </div>
+          <div className="h-[330px] w-full ">
+            <Chart data={data} />
           </div>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
 }
+
 export default TopClient;
