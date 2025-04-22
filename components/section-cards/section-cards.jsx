@@ -30,12 +30,12 @@ export function SectionCards() {
       try {
         // Using Promise.all to fetch all data simultaneously
         const [res1, res2, res3,  res4, res5, res6] = await Promise.all([
-          fetch("http://localhost:3001/api/contrat-daba"),
-          fetch("http://localhost:3001/api/totalclient"), 
-          fetch("http://localhost:3001/api/total_vo_ly"),
-          fetch("http://localhost:3001/api/total_vo"),
-          fetch("http://localhost:3001/api/TOTAL_SINISTRE"),
-          fetch("http://localhost:3001/api/TOTAL_SINISTRE_1"),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/contrat-daba`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/totalclient`), 
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/total_vo_ly`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/total_vo`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/TOTAL_SINISTRE`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/TOTAL_SINISTRE_1`),
         ]);
 
         // Parsing all responses in parallel
@@ -206,8 +206,8 @@ export function SectionCards() {
           </CardHeader>
         </Link>
         <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
-          <div className={`flex gap-2 font-medium items-center ${ trend2 === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-            {trend1 === "up" ?  `Plus que l'année précédente.` : `Moins que l'année précédente.`}
+          <div className={`flex gap-2 font-medium items-center ${ trend1 === 'up' ? 'text-green-600' : 'text-red-600'}`}>
+            {trend1 === "up" ?  `Plus que l'année précédente` : `Moins que l'année précédente`}
             {trend1 === "up" ? <IconTrendingUp className="size-4"/> : <IconTrendingDown className="size-4"/>}
           </div>
           {/* <div className="text-muted-foreground text-xs">

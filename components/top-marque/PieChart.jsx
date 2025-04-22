@@ -12,7 +12,7 @@ function PieChart() {
   useEffect(() => {
     const fetchTopClients = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/top_marque");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/top_marque`);
         const data = await response.json();
 
         const sortedData = data

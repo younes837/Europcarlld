@@ -41,7 +41,7 @@ const ClientDataTable = () => {
     }
   }, []);
 
-  const API_URL = "http://localhost:3001/api/all_entretien";
+  const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/all_entretien`;
 
   const fetchData = async () => {
     setLoading2(false);

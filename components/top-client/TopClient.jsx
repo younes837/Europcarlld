@@ -15,7 +15,7 @@ function TopClient() {
     const fetchClient= async () => {
       try{
         setIsLoading(true)
-        const res= await fetch('http://localhost:3001/api/cal_grille_offre_original')
+        const res= await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cal_grille_offre_original`)
         const data= await res.json()
         setTotalClient(data.length)
         setData(data)

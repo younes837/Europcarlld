@@ -24,7 +24,7 @@ const Lld = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await fetch('http://localhost:3001/api/ca_annuelle');
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/ca_annuelle`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
