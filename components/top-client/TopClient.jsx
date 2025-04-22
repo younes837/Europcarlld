@@ -10,17 +10,20 @@ function TopClient({ isLoadingFn }) {
   const [totalClient, setTotalClient] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchClient = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch(
-          "http://localhost:3001/api/cal_grille_offre_original"
-        );
-        const data = await res.json();
-        setTotalClient(data.length);
-        setData(data);
-      } catch (error) {
+function TopClient() {
+  const [data,setData] = useState([])
+  const [totalClient,setTotalClient]=useState([]);
+  const [isLoading,setIsLoading] = useState(true);
+
+  useEffect(()=>{
+    const fetchClient= async () => {
+      try{
+        setIsLoading(true)
+        const res= await fetch(`${process.env.NEXT_PUBLIC_API_URL}/cal_grille_offre_original`)
+        const data= await res.json()
+        setTotalClient(data.length)
+        setData(data)
+      }catch(error){
         console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);

@@ -12,7 +12,9 @@ function PieChart({ isLoadingFn }) {
   useEffect(() => {
     const fetchTopClients = async () => {
       try {
-        const response = await fetch("http://localhost:3001/api/top_marque");
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/top_marque`
+        );
         const data = await response.json();
 
         const sortedData = data
@@ -57,16 +59,16 @@ function PieChart({ isLoadingFn }) {
           radius: "50%",
           data: chartData,
           color: [
-            "#15803d",
-            "#16a34a",
-            "#22c55e",
-            "#4ade80",
-            "#059669",
-            "#10b981",
-            "#34d399",
-            "#84cc16",
-            "#a3e635",
-            "#65a30d",
+            "#13532c",
+            "#166138",
+            "#196f44",
+            "#1c7d52",
+            "#1f8c61",
+            "#229a71",
+            "#24a983",
+            "#27b796",
+            "#29c6aa",
+            "#2dd3bf",
           ],
           emphasis: {
             itemStyle: {

@@ -269,7 +269,8 @@ export default function page() {
           filterMode="server"
           filterModel={filterModel}
           onFilterModelChange={setFilterModel}
-          getRowId={(row) => row.id}
+          disableRowSelectionOnClick
+          getRowId={(row) => row.NrUnite}
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 mt-4">

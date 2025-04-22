@@ -93,13 +93,13 @@ export default function Page() {
           
           setAllData(processedItems);
           setFilteredData(processedItems);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
         if (mounted) {
-          setLoading(false);
-        }
+      setLoading(false);
+    }
       }
     };
 
@@ -150,49 +150,49 @@ export default function Page() {
         Les Véhicules en Attente
       </h2>
 
-      <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-4">
         <div className="flex justify-evenly items-center">
-          <div className="w-full sm:w-64 mx-3">
+              <div className="w-full sm:w-64 mx-3">
             <Label htmlFor="matricule-search" className="mb-2 block">
-              Rechercher par matricule
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
+                  Rechercher par matricule
+                </Label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
                 id="matricule-search"
                 placeholder="Matricule..."
                 value={matriculeSearch}
                 onChange={(e) => setMatriculeSearch(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          </div>
+                    className="pl-8"
+                    />
+                </div>
+              </div>
 
-          <div className="w-full sm:w-64 mx-3">
+              <div className="w-full sm:w-64 mx-3">
             <Label htmlFor="marque-search" className="mb-2 block">
-              Rechercher par marque
-            </Label>
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
+                    Rechercher par marque
+                  </Label>
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
                 id="marque-search"
                 placeholder="Marque..."
                 value={marqueSearch}
                 onChange={(e) => setMarqueSearch(e.target.value)}
-                className="pl-8"
-              />
+                      className="pl-8"
+                      />
+                  </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <Button
-          onClick={exportToExcel}
-          className="flex items-center gap-2"
-        >
-          <FileDown className="h-4 w-4" />
+            <Button
+              onClick={exportToExcel}
+              className="flex items-center gap-2"
+            >
+              <FileDown className="h-4 w-4" />
           Exporter vers Excel
-        </Button>
-      </div>
+            </Button>
+        </div>
 
       <div className="h-[75vh] overflow-auto">
         <DataGrid

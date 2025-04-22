@@ -41,7 +41,7 @@ const OldPneuData = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [debouncedNomClient, setDebouncedNomClient] = useState("");
 
-  const API_URL = "http://localhost:3001/api/old_pneu_kms";
+  const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/old_pneu_kms`;
 
   // Fonction de debounce
   const debounce = (func, delay) => {

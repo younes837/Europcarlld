@@ -62,8 +62,8 @@ export function ChartAreaInteractive() {
     const fetchData = async () => {
       try {
         const [res1, res2] = await Promise.all([
-          fetch("http://localhost:3001/api/total_contrat"),
-          fetch("http://localhost:3001/api/restitution_contrat"),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/total_contrat`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/restitution_contrat`),
         ]);
 
         const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
