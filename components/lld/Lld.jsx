@@ -172,8 +172,8 @@ const Lld = ({ isLoading }) => {
             data={chartData}
             margin={{
               top: 10,
-              right: 30,
-              left: 0,
+              right: 20,
+              left: 40,
               bottom: 0,
             }}
           >

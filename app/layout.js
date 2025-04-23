@@ -5,6 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { Suspense } from "react";
 import Loading from "./loading";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,6 +52,7 @@ export default function RootLayout({ children }) {
               </div>
             </Suspense>
           </SidebarInset>
+          {/* <ScrollToTop /> */}
         </SidebarProvider>
       </body>
     </html>
