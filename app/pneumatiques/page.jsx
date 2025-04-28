@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
@@ -634,7 +634,7 @@ export default function PneumatiquesPage() {
                       <div className="loader2"></div>
                     </div>
                   ) : (
-                    <div style={{ height: '60vh', minHeight: '500px', width: '100%' }}>
+                    <div style={{ height: '60vh', width: '100%' }}>
                       <DataGrid
                         rows={clientDetails}
                         columns={detailsColumns}
@@ -647,16 +647,16 @@ export default function PneumatiquesPage() {
                         getRowId={(row) => `${row.F090KY}_${row.F091IMMA}_${row.F400NMDOC}`}
                         className="bg-white"
                         disableRowSelectionOnClick
-                        sx={{ 
-                          height: '100%',
-                          width: '100%',
-                          '& .MuiDataGrid-root': {
-                            border: 'none'
-                          },
-                          '& .MuiDataGrid-cell': {
-                            borderBottom: '1px solid #f0f0f0'
-                          }
-                        }}
+                        // sx={{ 
+                        //   height: '100%',
+                        //   width: '100%',
+                        //   '& .MuiDataGrid-root': {
+                        //     border: 'none'
+                        //   },
+                        //   '& .MuiDataGrid-cell': {
+                        //     borderBottom: '1px solid #f0f0f0'
+                        //   }
+                        // }}
                       />
                     </div>
                   )}

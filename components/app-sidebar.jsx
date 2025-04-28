@@ -103,6 +103,10 @@ export const data = {
           url: "/modele_plus_utilise",
         },
         {
+          title: "Productions et Restitutions",
+          url: "/productions-restitutions",
+        },
+        {
           title: "Pneumatiques",
           url: "/pneumatiques",
         },
