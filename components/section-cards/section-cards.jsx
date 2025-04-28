@@ -129,7 +129,7 @@ export function SectionCards({ isLoading }) {
                 {totalContracts}
               </CardTitle>
             </div>
-            <CardAction>
+            {/* <CardAction>
               <Badge
                 variant="outline"
                 className="flex items-center gap-1 px-2 py-1 text-green-600 border-green-300 bg-green-50 dark:bg-green-900/20"
@@ -137,7 +137,7 @@ export function SectionCards({ isLoading }) {
                 <IconTrendingUp className="size-4 animate-pulse" />
                 <span>0</span>
               </Badge>
-            </CardAction>
+            </CardAction> */}
           </CardHeader>
         </Link>
         <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
@@ -146,38 +146,6 @@ export function SectionCards({ isLoading }) {
           </div>
           {/* <div className="text-muted-foreground text-xs">
             Visitors for the last 6 months
-          </div> */}
-        </CardFooter>
-      </Card>
-
-      <Card className="@container/card transition-shadow hover:shadow-md rounded-2xl border border-border/50 bg-gradient-to-br from-card to-muted/10 backdrop-blur-sm">
-        <Link href="/parc-par-client">
-          <CardHeader className="flex justify-between items-start">
-            <div>
-              <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
-                Parc moyen Par Client
-              </CardTitle>
-              <CardTitle className="text-3xl font-bold tabular-nums text-foreground @[250px]/card:text-4xl">
-                {parcParClient}
-              </CardTitle>
-            </div>
-            <CardAction>
-              <Badge
-                variant="outline"
-                className="flex items-center gap-1 px-2 py-1 text-red-600 border-red-300 bg-red-50 dark:bg-red-900/20"
-              >
-                <IconTrendingDown className="size-4 animate-pulse" />
-                <span>-20%</span>
-              </Badge>
-            </CardAction>
-          </CardHeader>
-        </Link>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
-          <div className="flex gap-2 font-medium items-center text-red-600 dark:text-red-400">
-            Down 20% this period <IconTrendingDown className="size-4" />
-          </div>
-          {/* <div className="text-muted-foreground text-xs">
-            Acquisition needs attention
           </div> */}
         </CardFooter>
       </Card>
@@ -221,6 +189,38 @@ export function SectionCards({ isLoading }) {
           </div>
           {/* <div className="text-muted-foreground text-xs">
             Engagement exceed targets
+          </div> */}
+        </CardFooter>
+      </Card>
+
+      <Card className="@container/card transition-shadow hover:shadow-md rounded-2xl border border-border/50 bg-gradient-to-br from-card to-muted/10 backdrop-blur-sm">
+        <Link href="/parc-par-client">
+          <CardHeader className="flex justify-between items-start">
+            <div>
+              <CardTitle className="text-muted-foreground text-sm uppercase tracking-wide">
+                Parc moyen Par Client
+              </CardTitle>
+              <CardTitle className="text-3xl font-bold tabular-nums text-foreground @[250px]/card:text-4xl">
+                {parcParClient}
+              </CardTitle>
+            </div>
+            {/* <CardAction>
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1 px-2 py-1 text-red-600 border-red-300 bg-red-50 dark:bg-red-900/20"
+              >
+                <IconTrendingDown className="size-4 animate-pulse" />
+                <span>-20%</span>
+              </Badge>
+            </CardAction> */}
+          </CardHeader>
+        </Link>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm mt-2">
+          {/* <div className="flex gap-2 font-medium items-center text-red-600 dark:text-red-400">
+            Down 20% this period <IconTrendingDown className="size-4" />
+          </div> */}
+          {/* <div className="text-muted-foreground text-xs">
+            Acquisition needs attention
           </div> */}
         </CardFooter>
       </Card>

@@ -83,7 +83,7 @@ function Breadcrumb({ ...props }) {
             <ChevronRight className="h-4 w-4 text-muted-foreground/40" />
           )}
           <Link
-            href={breadcrumb.url}
+            href={"#"}
             className={`hover:text-foreground flex items-center gap-1.5 ${
               index === breadcrumbs.length - 1
                 ? "text-foreground font-medium"

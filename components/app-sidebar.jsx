@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import {
@@ -18,7 +18,8 @@ import {
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react";
-
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -30,7 +31,13 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { Car, FolderClosed, SquareTerminal, Wrench,  ChartNoAxesCombined} from "lucide-react";
+import {
+  Car,
+  FolderClosed,
+  SquareTerminal,
+  Wrench,
+  ChartNoAxesCombined,
+} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -91,6 +98,9 @@ export const data = {
         {
           title: "Liste des entretiens",
           url: "/liste-entretiens",
+        }, {
+          title: "Modèle Le Plus Utilisé",
+          url: "/modele_plus_utilise",
         },
         {
           title: "Pneumatiques",
@@ -134,7 +144,7 @@ export const data = {
       title: "Analyse Financière",
       label: "Analyse Financière",
       url: "#",
-      icon: ChartNoAxesCombined ,
+      icon: ChartNoAxesCombined,
       items: [
         {
           title: "Revenue par voiture",
@@ -170,6 +180,7 @@ export const data = {
 };
 
 export function AppSidebar({ ...props }) {
+  const pathname = usePathname();
   return (
     <Sidebar className={"bg-green-500"} collapsible="icon" {...props}>
       <SidebarHeader>
@@ -183,15 +194,20 @@ export function AppSidebar({ ...props }) {
             />
           </div>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <Link href="/">
+            <Link href="/">
+              <SidebarMenuButton
+                className={cn(
+                  "relative ",
+                  pathname === "/" && "bg-accent text-accent-foreground "
+                )}
+              >
                 <IconDashboard className="!size-5" />
                 <span className="text-base font-semibold">Tableau de Bord</span>
-              </Link>
-            </SidebarMenuButton>
+                {pathname === "/" && (
+                  <span className="absolute left-0 h-full w-1 bg-gray-500 rounded-r-lg" />
+                )}
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
