@@ -614,6 +614,7 @@ export default function PneumatiquesPage() {
                         getRowId={(row) => `${row.F090KY}_${row.F091IMMA}_${row.F400NMDOC}`}
                         className="bg-white"
                         disableRowSelectionOnClick
+                        localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
                       />
                     </div>
                   )}
