@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { DataGrid } from "@mui/x-data-grid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Search, FileDown, Eye, X } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
 import frFR from "../frFR";
+import { Card, CardContent } from "@/components/ui/card";
+import { Car, Users, Gauge, Box, DollarSign } from "lucide-react";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -48,37 +50,160 @@ const detailsColumns = [
 ];
 
 export default function PneumatiquesPage() {
-  const [rows, setRows] = useState([]);
+  const [allData, setAllData] = useState([]); // Store all data
   const [loading, setLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
-  const [paginationModel, setPaginationModel] = useState({
-    page: 0,
-    pageSize: 50,
-  });
-  const [rowCount, setRowCount] = useState(0);
-  const [sortModel, setSortModel] = useState([]);
-  const [filterModel, setFilterModel] = useState({
-    items: [],
-  });
+  const [error, setError] = useState(null);
   const [clientSearch, setClientSearch] = useState("");
   const [searchTimeout, setSearchTimeout] = useState(null);
-  const [filterTimeout, setFilterTimeout] = useState(null);
-  const [isFiltering, setIsFiltering] = useState(false);
-  const [error, setError] = useState(null);
-  const [totals, setTotals] = useState({
-    number_of_vehicles: 0,
-    total_pneu_consommé: 0,
-    total_pneu_dotation: 0,
-    total_montant: 0,
-    client_count: 0,
-  });
   
-  // Add state for details dialog
+  // State for details modal
   const [selectedClient, setSelectedClient] = useState(null);
   const [clientDetails, setClientDetails] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [loadingRowId, setLoadingRowId] = useState(null);
+
+  // Calculate filtered data
+  const filteredData = useMemo(() => {
+    // Only include data rows, no totals row
+    let filtered = allData.filter(row => row.id !== 'totals');
+    
+    if (clientSearch) {
+      const searchLower = clientSearch.toLowerCase();
+      filtered = filtered.filter(row => 
+        row.CLIENT?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    return filtered;
+  }, [allData, clientSearch]);
+
+  // Calculate totals from filtered data
+  const totals = useMemo(() => {
+    return {
+      number_of_vehicles: filteredData.reduce((sum, row) => sum + (Number(row.number_of_vehicles) || 0), 0),
+      total_pneu_consommé: filteredData.reduce((sum, row) => sum + (Number(row.total_pneu_consommé) || 0), 0),
+      total_pneu_dotation: filteredData.reduce((sum, row) => sum + (Number(row.total_pneu_dotation) || 0), 0),
+      total_montant: filteredData.reduce((sum, row) => sum + (Number(row.total_montant) || 0), 0),
+      client_count: filteredData.length,
+      consommation_moyenne: filteredData.reduce((sum, row) => sum + (Number(row.number_of_vehicles) || 0), 0) > 0
+        ? (filteredData.reduce((sum, row) => sum + (Number(row.total_pneu_consommé) || 0), 0) / 
+           filteredData.reduce((sum, row) => sum + (Number(row.number_of_vehicles) || 0), 0)).toFixed(2)
+        : 0
+    };
+  }, [filteredData]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${API_URL}/total_pneu_client`);
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Add totals row with a specific id
+      const totalsRow = {
+        id: 'totals',
+        CLIENT: `Total Clients: ${data.totals.total_clients}`,
+        number_of_vehicles: data.totals.total_vehicles,
+        total_pneu_consommé: data.totals.total_pneus_consommes,
+        total_pneu_dotation: data.totals.total_pneus_dotation,
+        oldest_contract_date: '',
+        consommation_moyenne: data.totals.total_vehicles > 0 
+          ? (data.totals.total_pneus_consommes / data.totals.total_vehicles).toFixed(2) 
+          : 0,
+        total_montant: data.totals.total_montant,
+      };
+
+      // Add unique IDs to data items if they don't have them
+      const itemsWithIds = data.items.map((item, index) => ({
+        ...item,
+        id: item.id || `row-${index}`
+      }));
+
+      // Set the data with totals row first
+      setAllData([totalsRow, ...itemsWithIds]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setAllData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleSearch = useCallback(
+    (value) => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+
+      const timeout = setTimeout(() => {
+        setClientSearch(value);
+      }, 300);
+
+      setSearchTimeout(timeout);
+    },
+    [searchTimeout]
+  );
+
+  const exportToExcel = () => {
+    try {
+      setExportLoading(true);
+      
+      if (filteredData.length === 0) {
+        console.warn("No data to export");
+        return;
+      }
+
+      const formattedData = [
+        {
+          Client: `Total Clients: ${totals.client_count}`,
+          "Nombre de Véhicules": totals.number_of_vehicles,
+          "Total Pneus Consommés": totals.total_pneu_consommé,
+          "Total Pneus Dotation": totals.total_pneu_dotation,
+          "Date Contrat Plus Ancien": '',
+          "Consommation Moyenne par Véhicule": totals.number_of_vehicles > 0 
+            ? (totals.total_pneu_consommé / totals.number_of_vehicles).toFixed(2) 
+            : 0,
+          "Total Montant": totals.total_montant,
+        },
+        ...filteredData.map((row) => ({
+          Client: row.CLIENT,
+          "Nombre de Véhicules": row.number_of_vehicles,
+          "Total Pneus Consommés": row.total_pneu_consommé,
+          "Total Pneus Dotation": row.total_pneu_dotation,
+          "Date Contrat Plus Ancien": row.oldest_contract_date,
+          "Consommation Moyenne par Véhicule": row.consommation_moyenne,
+          "Total Montant": row.total_montant,
+        }))
+      ];
+
+      const ws = XLSX.utils.json_to_sheet(formattedData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Pneumatiques");
+
+      XLSX.writeFile(
+        wb,
+        `pneumatiques_${new Date().toISOString().split("T")[0]}.xlsx`
+      );
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+      setError(error.message);
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   // Function to handle viewing details
   const handleViewDetails = async (row) => {
@@ -151,6 +276,9 @@ export default function PneumatiquesPage() {
       sortable: false,
       filterable: false,
       renderCell: (params) => {
+        // Don't render action button for totals row
+        if (params.row.CLIENT?.startsWith('Total Client')) return null;
+        
         const isLoading = loadingRowId === (params.row.id || params.row.CLIENT);
         return (
         <Button
@@ -228,284 +356,6 @@ export default function PneumatiquesPage() {
 }},
   ];
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const params = new URLSearchParams({
-        page: paginationModel.page + 1,
-        pageSize: paginationModel.pageSize,
-      });
-
-      // Add sorting parameters
-      if (sortModel.length > 0) {
-        params.append("sortField", sortModel[0].field);
-        params.append("sortOrder", sortModel[0].sort);
-      }
-
-      // Add filter parameters to the request
-      if (filterModel.items.length > 0) {
-        // Filter out empty values to prevent unnecessary filtering
-        const validFilters = filterModel.items.filter(item => 
-          item.value !== undefined && 
-          item.value !== null && 
-          item.value !== ''
-        );
-        
-        if (validFilters.length > 0) {
-          // Convert filter model to a format the backend can understand
-          const filterParams = validFilters.map(item => ({
-            field: item.field,
-            operator: item.operator,
-            value: item.value
-          }));
-          params.append("filters", JSON.stringify(filterParams));
-        }
-      }
-
-      if (clientSearch) {
-        params.append("clientSearch", clientSearch);
-      }
-
-      console.log(
-        "Fetching from URL:",
-        `${API_URL}/total_pneu_client?${params.toString()}`
-      );
-
-      const response = await fetch(
-        `${API_URL}/total_pneu_client?${params.toString()}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Server response:", errorText);
-        throw new Error(`Server error: ${response.status} - ${errorText}`);
-      }
-
-      const data = await response.json();
-      if (!data.items) {
-        throw new Error("No items array in response");
-      }
-
-      // Debug: Log the first few items to check their values
-      console.log("Sample data from backend:", data.items.slice(0, 3));
-      
-      // Use the totals from the backend
-      const calculatedTotals = {
-        number_of_vehicles: data.totals?.total_vehicles || 0,
-        total_pneu_consommé: data.totals?.total_pneus_consommes || 0,
-        total_pneu_dotation: data.totals?.total_pneus_dotation || 0,
-        total_montant: data.totals?.total_montant || 0,
-        client_count: data.totals?.total_clients || 0,
-      };
-      setTotals(calculatedTotals);
-
-      // Debug: Log the calculated totals
-      console.log("Calculated totals:", calculatedTotals);
-
-      // Add a totals row at the beginning
-      const totalsRow = {
-        id: 'totals',
-        CLIENT: `Total Clients: ${calculatedTotals.client_count}`,
-        number_of_vehicles: calculatedTotals.number_of_vehicles,
-        total_pneu_consommé: calculatedTotals.total_pneu_consommé,
-        total_pneu_dotation: calculatedTotals.total_pneu_dotation,
-        oldest_contract_date: '',
-        consommation_moyenne: calculatedTotals.number_of_vehicles > 0 
-          ? (calculatedTotals.total_pneu_consommé / calculatedTotals.number_of_vehicles).toFixed(2) 
-          : 0,
-        total_montant: calculatedTotals.total_montant,
-      };
-
-      // Debug: Log the totals row
-      console.log("Totals row:", totalsRow);
-
-      setRows([totalsRow, ...data.items]);
-      setRowCount(data.total || 0);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setError(error.message);
-      setRows([]);
-      setRowCount(0);
-    } finally {
-      setLoading(false);
-      setIsFiltering(false);
-    }
-  };
-
-  const fetchAllData = async () => {
-    try {
-      setExportLoading(true);
-      const params = new URLSearchParams({
-        page: 1,
-        pageSize: 10000,
-      });
-
-      if (clientSearch) params.append("clientSearch", clientSearch);
-
-      const response = await fetch(
-        `${API_URL}/total_pneu_client?${params.toString()}`
-      );
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: response.statusText }));
-        throw new Error(errorData.error || `Error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      return data.items || [];
-    } catch (error) {
-      console.error("Error fetching all data:", error);
-      setError(error.message);
-      return [];
-    } finally {
-      setExportLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [
-    paginationModel,
-    sortModel,
-    clientSearch,
-  ]);
-
-  const handleSearch = useCallback(
-    (value) => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-
-      const timeout = setTimeout(() => {
-        setClientSearch(value);
-        setPaginationModel((prev) => ({ ...prev, page: 0 }));
-      }, 750);
-
-      setSearchTimeout(timeout);
-    },
-    [searchTimeout]
-  );
-
-  const exportToExcel = async () => {
-    try {
-      setExportLoading(true);
-      const exportData = await fetchAllData();
-
-      if (exportData.length === 0) {
-        console.warn("No data to export");
-        return;
-      }
-
-      // Debug: Log the first few items from export data
-      console.log("Sample export data:", exportData.slice(0, 3));
-
-      // Calculate totals for export
-      const calculatedTotals = {
-        number_of_vehicles: exportData.reduce((sum, row) => sum + (Number(row.number_of_vehicles) || 0), 0),
-        total_pneu_consommé: exportData.reduce((sum, row) => sum + (Number(row.total_pneu_consommé) || 0), 0),
-        total_pneu_dotation: exportData.reduce((sum, row) => sum + (Number(row.total_pneu_dotation) || 0), 0),
-        total_montant: exportData.reduce((sum, row) => sum + (Number(row.total_montant) || 0), 0),
-        client_count: exportData.length,
-      };
-
-      // Debug: Log the calculated totals for export
-      console.log("Export calculated totals:", calculatedTotals);
-
-      // Add totals row
-      const totalsRow = {
-        CLIENT: `Total Clients: ${calculatedTotals.client_count}`,
-        "Nombre de Véhicules": calculatedTotals.number_of_vehicles,
-        "Total Pneus Consommés": calculatedTotals.total_pneu_consommé,
-        "Total Pneus Dotation": calculatedTotals.total_pneu_dotation,
-        "Date Contrat Plus Ancien": '',
-        "Consommation Moyenne par Véhicule": calculatedTotals.number_of_vehicles > 0 
-          ? (calculatedTotals.total_pneu_consommé / calculatedTotals.number_of_vehicles).toFixed(2) 
-          : 0,
-        "Total Montant": calculatedTotals.total_montant,
-      };
-
-      // Debug: Log the totals row for export
-      console.log("Export totals row:", totalsRow);
-
-      const formattedData = [totalsRow, ...exportData.map((row) => ({
-        Client: row.CLIENT,
-        "Nombre de Véhicules": row.number_of_vehicles,
-        "Total Pneus Consommés": row.total_pneu_consommé,
-        "Total Pneus Dotation": row.total_pneu_dotation,
-        "Date Contrat Plus Ancien": row.oldest_contract_date,
-        "Consommation Moyenne par Véhicule": row.consommation_moyenne,
-        "Total Montant": row.total_montant,
-      }))];
-
-      const ws = XLSX.utils.json_to_sheet(formattedData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Pneumatiques");
-
-      XLSX.writeFile(
-        wb,
-        `pneumatiques_${new Date().toISOString().split("T")[0]}.xlsx`
-      );
-    } catch (error) {
-      console.error("Error exporting to Excel:", error);
-      setError(error.message);
-    } finally {
-      setExportLoading(false);
-    }
-  };
-
-  // Add a handler for filter model changes with debounce
-  const handleFilterModelChange = useCallback(
-    (newFilterModel) => {
-      // Only set filtering state if there are actual filter values
-      const hasValidFilters = newFilterModel.items.some(item => 
-        item.value !== undefined && 
-        item.value !== null && 
-        item.value !== ''
-      );
-      
-      if (hasValidFilters) {
-        setIsFiltering(true);
-      }
-      
-      setFilterModel(newFilterModel);
-      
-      // Clear any existing timeout
-      if (filterTimeout) {
-        clearTimeout(filterTimeout);
-      }
-      
-      // Set a new timeout to trigger the search after 750ms
-      const timeout = setTimeout(() => {
-        setPaginationModel((prev) => ({ ...prev, page: 0 }));
-        fetchData();
-      }, 750);
-      
-      setFilterTimeout(timeout);
-    },
-    [filterTimeout]
-  );
-
-  useEffect(() => {
-    return () => {
-      if (searchTimeout) {
-        clearTimeout(searchTimeout);
-      }
-      if (filterTimeout) {
-        clearTimeout(filterTimeout);
-      }
-    };
-  }, [searchTimeout, filterTimeout]);
-
   return (
     <div className="px-4">
       <div className="flex justify-between items-center">
@@ -522,11 +372,136 @@ export default function PneumatiquesPage() {
         </Button>
       </div>
 
-      {error && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md text-red-600">
-          Erreur: {error}
-        </div>
-      )}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+          <CardContent className="p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Total Clients
+                </div>
+                <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Users className="h-7 w-7 text-blue-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {totals.client_count.toLocaleString("fr-FR")}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+          <CardContent className="p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Nombre de Véhicules
+                </div>
+                <div className="h-10 w-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                  <Car className="h-7 w-7 text-yellow-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {totals.number_of_vehicles.toLocaleString("fr-FR")}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+          <CardContent className="p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Total Pneus Consommés
+                </div>
+                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <Box className="h-7 w-7 text-green-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {totals.total_pneu_consommé.toLocaleString("fr-FR")}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+          <CardContent className="p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Total Pneus Dotation
+                </div>
+                <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                  <Box className="h-7 w-7 text-purple-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {totals.total_pneu_dotation.toLocaleString("fr-FR")}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+          <CardContent className="p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Consommation Moyenne
+                </div>
+                <div className="h-10 w-10 rounded-full bg-orange-100 flex items-center justify-center">
+                  <Gauge className="h-7 w-7 text-orange-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {Number(totals.consommation_moyenne).toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-[#fafafa] border-0 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:bg-white">
+          <CardContent className="p-6">
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-xs font-medium text-muted-foreground tracking-wider uppercase">
+                  Montant Total
+                </div>
+                <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <DollarSign className="h-7 w-7 text-green-600" />
+                </div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <div className="text-2xl font-bold tracking-tight">
+                  {totals.total_montant.toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
+                </div>
+                <div className="text-sm font-medium text-muted-foreground">
+                  DH
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
         <div className="flex flex-col">
@@ -545,36 +520,28 @@ export default function PneumatiquesPage() {
         </div>
       </div>
 
-      {(loading || isFiltering) && <div className="loader2"></div>}
+      {loading && <div className="loader2"></div>}
       <div 
         className="flex-1 w-full" 
         style={{ 
-          height: '75vh',
+          height: '60vh',
           minHeight: '400px'
         }}
       >
         <DataGrid
-          rows={rows}
+          rows={filteredData}
           columns={columns}
-          rowCount={rowCount}
-          loading={loading || isFiltering}
+          loading={loading}
           pageSizeOptions={[25, 50, 100]}
-          paginationModel={paginationModel}
-          paginationMode="server"
-          onPaginationModelChange={setPaginationModel}
-          sortingMode="server"
-          sortModel={sortModel}
-          onSortModelChange={setSortModel}
-          filterMode="server"
-          filterModel={filterModel}
-          onFilterModelChange={handleFilterModelChange}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 50, page: 0 },
+            },
+          }}
           getRowId={(row) => row.id || row.CLIENT}
           disableRowSelectionOnClick
           localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
           className="bg-white"
-          getRowClassName={(params) => {
-            return params.row.id === 'totals' ? 'bg-yellow-100' : '';
-          }}
           sx={{ 
             height: '100%',
             width: '100%',
@@ -600,7 +567,7 @@ export default function PneumatiquesPage() {
               <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                 <div className="flex items-center justify-between border-b pb-4">
                   <h3 className="text-2xl font-semibold leading-6 text-gray-900">
-                    Détails des Pneumatiques - {selectedClient?.CLIENT}
+                    Détails des Pneumatiques - {clientDetails[0]?.F050NOMPRE}
                   </h3>
                   <div className="flex items-center gap-2">
                     <Button
@@ -639,7 +606,7 @@ export default function PneumatiquesPage() {
                         rows={clientDetails}
                         columns={detailsColumns}
                         loading={detailsLoading}
-                        pageSizeOptions={[25, 50, 100]}
+                        pageSizeOptions={[10, 25, 50]}
                         initialState={{
                           pagination: { paginationModel: { pageSize: 25 } },
                         }}
@@ -647,16 +614,6 @@ export default function PneumatiquesPage() {
                         getRowId={(row) => `${row.F090KY}_${row.F091IMMA}_${row.F400NMDOC}`}
                         className="bg-white"
                         disableRowSelectionOnClick
-                        // sx={{ 
-                        //   height: '100%',
-                        //   width: '100%',
-                        //   '& .MuiDataGrid-root': {
-                        //     border: 'none'
-                        //   },
-                        //   '& .MuiDataGrid-cell': {
-                        //     borderBottom: '1px solid #f0f0f0'
-                        //   }
-                        // }}
                       />
                     </div>
                   )}
@@ -669,3 +626,4 @@ export default function PneumatiquesPage() {
     </div>
   );
 }
+
