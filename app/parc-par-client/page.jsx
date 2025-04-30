@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
+import frFR from "@/app/frFR";  
 
 const columns = [
   { field: "Nom client", headerName: "Nom Client", flex: 1 },
@@ -267,6 +268,7 @@ export default function Page() {
           onFilterModelChange={setFilterModel}
           getRowId={(row) => row.id}
           disableRowSelectionOnClick
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
         />
       </div>
     </div>

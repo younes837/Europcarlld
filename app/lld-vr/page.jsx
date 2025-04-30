@@ -5,6 +5,7 @@ import { CircularProgress } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { Search, Calendar, X, FileText, Download } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import frFR from "@/app/frFR";
 
 import ExcelJS from "exceljs";
 export default function LldVrPage() {
@@ -875,6 +876,7 @@ export default function LldVrPage() {
           paginationMode="server"
           sortingMode="server"
           disableRowSelectionOnClick
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
           slots={{
             noRowsOverlay: () => (
               <div className="flex items-center justify-center h-full p-4 text-gray-500">

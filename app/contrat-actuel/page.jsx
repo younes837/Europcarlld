@@ -1,12 +1,12 @@
 ﻿"use client";
 import React, { useEffect, useState, useCallback } from "react";
 import { DataGrid } from "@mui/x-data-grid";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
+import frFR from "@/app/frFR";
 
 const columns = [
   { field: "client", headerName: "Client", width: 200 },
@@ -329,6 +329,7 @@ export default function PageActuel() {
           onFilterModelChange={setFilterModel}
           getRowId={(row) => row.id}
           disableRowSelectionOnClick
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
         />
       </div>
     </div>

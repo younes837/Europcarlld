@@ -7,6 +7,7 @@ import { Search, FileDown, DollarSign, Car, TrendingUp } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import * as XLSX from "xlsx";
+import frFR from "@/app/frFR";
 
 const columns = [
   { field: "Marque", headerName: "Marque", width: 300 },
@@ -334,6 +335,7 @@ export default function VRTable() {
             },
           }}
           pageSizeOptions={[25, 50, 100]}
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
         />
       </div>
     </div>

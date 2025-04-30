@@ -7,6 +7,7 @@ import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
 import frFR from "../frFR";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -150,6 +151,7 @@ export default function ProjectionKm() {
       }
       if (depassementFilter) {
         params.append("depassementFilter", depassementFilter);
+        console.log(depassementFilter);
       }
 
       console.log(
@@ -204,6 +206,7 @@ export default function ProjectionKm() {
       if (matriculeSearch) params.append("matriculeSearch", matriculeSearch);
       if (depassementFilter)
         params.append("depassementFilter", depassementFilter);
+      console.log(depassementFilter);
 
       const response = await fetch(
         `${API_URL}/km_project?${params.toString()}`
@@ -397,16 +400,21 @@ export default function ProjectionKm() {
           <Label htmlFor="depassement-filter" className="mb-2">
             Filtrer par Dépassement
           </Label>
-          <select
+          <Select
+            onValueChange={(value) => setDepassementFilter(value)}
             id="depassement-filter"
             value={depassementFilter}
-            onChange={(e) => setDepassementFilter(e.target.value)}
             className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <option value="">Tous</option>
-            <option value="Dépasse">Dépasse</option>
-            <option value="Non Dépasse">Non Dépasse</option>
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Tous" />
+            </SelectTrigger>
+            <SelectContent>
+              {/* <SelectItem value="">Tous</SelectItem> */}
+              <SelectItem value="Dépasse">Dépasse</SelectItem>
+              <SelectItem value="Non Dépasse">Non Dépasse</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

@@ -347,11 +347,11 @@ export default function ListeEntretiens() {
         </Card>
       </div>
 
-      {error && (
+      {/* {error && (
         <div className="mb-4 p-4 text-red-500 bg-red-50 border border-red-200 rounded">
           Error: {error}
         </div>
-      )}
+      )} */}
 
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-4">

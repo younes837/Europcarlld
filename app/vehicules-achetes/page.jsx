@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Search, FileDown } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import * as XLSX from "xlsx";
+import frFR from "@/app/frFR";
+import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const columns = [
   { field: "Unite", headerName: "Unite", width: 100 },
@@ -333,7 +335,7 @@ export default function Page() {
 
   // Handle position change
   const handlePositionChange = (e) => {
-    setPosition(e.target.value);
+    setPosition(e);
     setPaginationModel((prev) => ({ ...prev, page: 0 })); // Reset to first page
   };
 
@@ -392,19 +394,22 @@ export default function Page() {
             <Label htmlFor="position-select" className="mb-2 block">
               Position
             </Label>
-            <select
+            <Select
+              
               id="position-select"
               value={position}
-              onChange={handlePositionChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onValueChange={handlePositionChange}
             >
-              
-                <option value="">Toutes les positions</option>
-		<option value="LCD">LCD</option>
-		<option value="LLD">LLD</option>
-		<option value="RL">RL</option>
-
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Toutes les positions" />
+              </SelectTrigger>
+              <SelectContent>
+                {/* <SelectItem value="">Toutes les positions</SelectItem> */}
+                <SelectItem value="LCD">LCD</SelectItem>
+                <SelectItem value="LLD">LLD</SelectItem>
+                <SelectItem value="RL">RL</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         
@@ -420,11 +425,11 @@ export default function Page() {
       </div>
 
       {/* Error display */}
-      {error && (
+      {/* {error && (
         <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
           {error}
         </div>
-      )}
+      )} */}
 
       {loading && <div className="loader2"></div>}
       <div className="h-[75vh] w-full" style={{ minHeight: "500px" }}>
@@ -445,6 +450,7 @@ export default function Page() {
           onFilterModelChange={setFilterModel}
           getRowId={(row) => row.Unite || `row-${Math.random()}`}
           disableRowSelectionOnClick
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
           sx={{ 
             height: '100%',
             width: '100%',

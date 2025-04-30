@@ -4,6 +4,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileDown } from "lucide-react";
 import * as XLSX from "xlsx";
+import frFR from "@/app/frFR";
+import { Input } from "@/components/ui/input";
+import { Select, SelectItem, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const columns = [
   { field: "NrUnite", headerName: "Nr Unite", width: 130 },
@@ -270,7 +273,7 @@ export default function page() {
           <label className="text-sm font-medium text-gray-700 mb-1">
             Date début
           </label>
-          <input
+          <Input
             type="date"
             value={dateDebut}
             onChange={(e) => setDateDebut(e.target.value)}
@@ -281,7 +284,7 @@ export default function page() {
           <label className="text-sm font-medium text-gray-700 mb-1">
             Date fin
           </label>
-          <input
+          <Input
             type="date"
             value={dateFin}
             onChange={(e) => setDateFin(e.target.value)}
@@ -292,16 +295,21 @@ export default function page() {
           <label className="text-sm font-medium text-gray-700 mb-1">
             Position
           </label>
-          <select
+          <Select
             value={selectedPosition}
-            onChange={(e) => setSelectedPosition(e.target.value)}
+            onValueChange={(value) => setSelectedPosition(value)}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="">Toutes les positions</option>
-            <option value="LCD">LCD</option>
-            <option value="LLD">LLD</option>
-            <option value="RL">RL</option>
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="Toutes les positions" />
+            </SelectTrigger>
+            <SelectContent>
+              {/* <SelectItem value="">Toutes les positions</SelectItem> */}
+              <SelectItem value="LCD">LCD</SelectItem>
+              <SelectItem value="LLD">LLD</SelectItem>
+              <SelectItem value="RL">RL</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
       <div className="h-[75vh] overflow-auto">
@@ -322,6 +330,7 @@ export default function page() {
           onFilterModelChange={setFilterModel}
           disableRowSelectionOnClick
           getRowId={(row) => row.NrUnite}
+          localeText={frFR.components.MuiDataGrid.defaultProps.localeText}
         />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 mt-4">
