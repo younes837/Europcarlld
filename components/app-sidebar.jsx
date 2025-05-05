@@ -83,6 +83,10 @@ export const data = {
           title: "Suivi des marchés",
           url: "/suivi-marches",
         },
+        {
+          title: "Restitutions des Contrats",
+          url: "/restitutions-contrats",
+        },
       ],
     },
     {
